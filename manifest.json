@@ -1,0 +1,21 @@
+{
+  "name": "SIPONTREN - Sistem Informasi Pondok Pesantren",
+  "short_name": "SIPONTREN",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#f3f4f6",
+  "theme_color": "#0f766e",
+  "description": "Aplikasi Manajemen Data, Absensi QR, dan Raport Pondok Pesantren",
+  "icons": [
+    {
+      "src": "https://cdn-icons-png.flaticon.com/512/3595/3595514.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "https://cdn-icons-png.flaticon.com/512/3595/3595514.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}
