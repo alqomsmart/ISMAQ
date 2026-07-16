@@ -18,7 +18,8 @@
                 extend: {
                     colors: {
                         emerald: { 50: '#ecfdf5', 100: '#d1fae5', 500: '#10b981', 600: '#059669', 700: '#047857', 800: '#065f46', 900: '#064e3b' },
-                        teal: { 50: '#f0fdfa', 500: '#14b8a6', 600: '#0d9488', 700: '#0f766e', 800: '#115e59', 900: '#134e4a' }
+                        teal: { 50: '#f0fdfa', 500: '#14b8a6', 600: '#0d9488', 700: '#0f766e', 800: '#115e59', 900: '#134e4a' },
+                        indigo: { 50: '#eef2ff', 100: '#e0e7ff', 500: '#6366f1', 600: '#4f46e5', 700: '#4338ca', 800: '#3730a3', 900: '#312e81' }
                     }
                 }
             }
@@ -77,6 +78,14 @@
             background: white;
             box-sizing: border-box;
         }
+        
+        /* A4 Portrait specific adjustments */
+        .a4-portrait {
+            width: 210mm;
+            min-height: 297mm;
+            padding: 15mm;
+            background: white;
+        }
 
         .syahadah-border {
             border: 8px solid #065f46;
@@ -130,6 +139,9 @@
             <a href="#" onclick="switchTab('hafalan')" id="nav-hafalan" class="nav-item flex items-center gap-3 px-6 py-3 text-sm font-medium">
                 <i class="fas fa-book-open w-5 text-center"></i> Setor Hafalan
             </a>
+            <a href="#" onclick="switchTab('tahsin')" id="nav-tahsin" class="nav-item flex items-center gap-3 px-6 py-3 text-sm font-medium">
+                <i class="fas fa-star w-5 text-center"></i> Penilaian Tahsin
+            </a>
             <a href="#" onclick="switchTab('raport')" id="nav-raport" class="nav-item flex items-center gap-3 px-6 py-3 text-sm font-medium">
                 <i class="fas fa-file-alt w-5 text-center"></i> Raport & Laporan
             </a>
@@ -139,7 +151,7 @@
         </nav>
 
         <div class="p-4 border-t border-teal-600/50 text-xs text-teal-200 text-center">
-            v1.2 &copy; 2026 SIPONTREN
+            v1.6 &copy; 2026 SIPONTREN
         </div>
     </aside>
 
@@ -228,8 +240,8 @@
                     <ul class="text-sm text-gray-600 space-y-2 list-disc list-inside">
                         <li><strong>Data Santri:</strong> Tambahkan data santri baru dan cetak Kartu QR Code mereka di menu ini.</li>
                         <li><strong>Jadwal Kegiatan:</strong> Atur sesi kegiatan (misal: Subuh, Ashar) sebelum menggunakan fitur absensi.</li>
-                        <li><strong>Scan Absensi:</strong> Gunakan kamera laptop/HP atau input manual untuk absensi. Notifikasi WA otomatis ke orang tua jika token Fonnte diisi.</li>
-                        <li><strong>Setor Hafalan:</strong> Catat hafalan Qur'an atau kitab santri dan cetak sertifikat (Syahadah).</li>
+                        <li><strong>Scan Absensi:</strong> Gunakan kamera laptop/HP atau input manual untuk absensi. Anda bisa mengirim pesan manual WA ke orang tua dari tabel Riwayat.</li>
+                        <li><strong>Setor Hafalan & Tahsin:</strong> Catat progress hafalan dan nilai ujian Tahsin Al-Qur'an santri.</li>
                         <li><strong>Pengaturan:</strong> Jangan lupa melakukan <span class="font-semibold">Backup Data</span> secara berkala (Cloud atau Download Lokal).</li>
                     </ul>
                 </div>
@@ -364,6 +376,7 @@
                                             <th class="p-2 font-medium text-gray-600">Nama Santri</th>
                                             <th class="p-2 font-medium text-gray-600">Sesi</th>
                                             <th class="p-2 font-medium text-gray-600">Status</th>
+                                            <th class="p-2 font-medium text-gray-600 text-center">Aksi</th>
                                         </tr>
                                     </thead>
                                     <tbody id="table-absensi" class="divide-y divide-gray-100">
@@ -413,6 +426,38 @@
                 </div>
             </section>
 
+            <!-- 5B. PENILAIAN TAHSIN -->
+            <section id="tab-tahsin" class="tab-content">
+                <div class="flex flex-col md:flex-row justify-between items-center mb-6 gap-4">
+                    <button onclick="openModal('modal-tahsin')" class="w-full md:w-auto bg-indigo-600 hover:bg-indigo-700 text-white px-5 py-2.5 rounded-lg font-medium transition flex items-center justify-center gap-2 shadow-lg shadow-indigo-200">
+                        <i class="fas fa-clipboard-check"></i> Input Nilai Tahsin
+                    </button>
+                </div>
+
+                <div class="glass-card rounded-xl overflow-hidden bg-white">
+                    <div class="p-4 border-b">
+                        <h3 class="font-bold text-gray-700">Riwayat Penilaian Tahsin</h3>
+                    </div>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left border-collapse text-sm">
+                            <thead class="bg-gray-50 text-gray-500 border-b">
+                                <tr>
+                                    <th class="p-4 font-medium">Tanggal</th>
+                                    <th class="p-4 font-medium">Nama Santri</th>
+                                    <th class="p-4 font-medium">Penguji</th>
+                                    <th class="p-4 font-medium text-center">Nilai Akhir</th>
+                                    <th class="p-4 font-medium text-center">Predikat</th>
+                                    <th class="p-4 font-medium text-center">Aksi Cetak</th>
+                                </tr>
+                            </thead>
+                            <tbody id="table-tahsin" class="divide-y divide-gray-100">
+                                <!-- Data Tahsin -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
             <!-- 6. RAPORT & LAPORAN -->
             <section id="tab-raport" class="tab-content">
                 <div class="glass-card p-5 rounded-xl mb-6">
@@ -422,14 +467,14 @@
                             <input type="month" id="filter-raport-month" class="w-full border p-2 rounded-lg focus:ring-teal-500 outline-none text-sm">
                         </div>
                         <button onclick="generateLaporanGlobal()" class="bg-teal-600 hover:bg-teal-700 text-white px-5 py-2 rounded-lg font-medium text-sm transition shadow">
-                            <i class="fas fa-table mr-2"></i> Rekap Global
+                            <i class="fas fa-table mr-2"></i> Buat Rekap Global
                         </button>
                     </div>
                 </div>
 
                 <div id="raport-global-container" class="glass-card rounded-xl overflow-hidden bg-white mb-6 hidden">
                     <div class="p-4 border-b flex justify-between items-center">
-                        <h3 class="font-bold text-gray-700">Rekapitulasi Bulanan</h3>
+                        <h3 class="font-bold text-gray-700">Rekapitulasi Kehadiran & Hafalan</h3>
                     </div>
                     <div class="overflow-x-auto p-4">
                         <table class="w-full text-left border text-sm">
@@ -440,8 +485,8 @@
                                     <th class="p-2 border font-semibold text-center">Izin</th>
                                     <th class="p-2 border font-semibold text-center">Sakit</th>
                                     <th class="p-2 border font-semibold text-center">Alpa</th>
-                                    <th class="p-2 border font-semibold text-center">Total Setoran</th>
-                                    <th class="p-2 border font-semibold text-center">Cetak Raport</th>
+                                    <th class="p-2 border font-semibold text-center">Frekuensi Setoran</th>
+                                    <th class="p-2 border font-semibold text-center">Aksi Cetak</th>
                                 </tr>
                             </thead>
                             <tbody id="table-laporan-global">
@@ -467,11 +512,6 @@
                                 <label class="block font-medium text-gray-700 mb-1">URL Logo (Opsional)</label>
                                 <input type="url" id="set-logo" placeholder="https://..." class="w-full border p-2 rounded-lg focus:ring-teal-500 outline-none">
                                 <p class="text-xs text-gray-500 mt-1">Kosongkan untuk menggunakan ikon bawaan.</p>
-                            </div>
-                            <div class="pt-4 border-t">
-                                <label class="block font-medium text-gray-700 mb-1">Token API Fonnte (WhatsApp)</label>
-                                <input type="password" id="set-fonnte" class="w-full border p-2 rounded-lg focus:ring-teal-500 outline-none">
-                                <p class="text-xs text-gray-500 mt-1">Dapatkan di fonnte.com untuk notifikasi WA otomatis saat absensi.</p>
                             </div>
                             <div class="pt-4 border-t">
                                 <label class="block font-medium text-gray-700 mb-1">URL Google Apps Script (GAS) Web App</label>
@@ -613,7 +653,10 @@
                     </div>
                     <div>
                         <label class="block text-xs font-medium text-gray-600 mb-1">Surat</label>
-                        <input type="text" id="h-q-surat" placeholder="Cth: Al-Mulk" class="w-full border p-2 rounded focus:ring-emerald-500 outline-none">
+                        <select id="h-q-surat" class="w-full border p-2 rounded focus:ring-emerald-500 outline-none text-xs">
+                            <option value="">-- Pilih --</option>
+                            <!-- Otomatis diisi oleh JavaScript -->
+                        </select>
                     </div>
                     <div>
                         <label class="block text-xs font-medium text-gray-600 mb-1">Ayat</label>
@@ -657,7 +700,90 @@
         </div>
     </div>
 
-    <!-- Container Tersembunyi Untuk Generate Gambar/PDF (ID Card, Syahadah, Raport) -->
+    <!-- Modal Input Penilaian Tahsin -->
+    <div id="modal-tahsin" class="fixed inset-0 bg-black bg-opacity-50 hidden z-50 flex items-center justify-center p-4">
+        <div class="bg-white rounded-xl shadow-xl w-full max-w-lg overflow-y-auto max-h-[90vh]">
+            <div class="bg-indigo-600 px-4 py-3 flex justify-between items-center text-white sticky top-0 z-10">
+                <h3 class="font-bold"><i class="fas fa-clipboard-check mr-2"></i> Form Penilaian Tahsin</h3>
+                <button onclick="closeModal('modal-tahsin')" class="hover:text-indigo-200"><i class="fas fa-times"></i></button>
+            </div>
+            <form id="form-tahsin" onsubmit="saveTahsin(event)" class="p-5 space-y-4 text-sm">
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block font-medium text-gray-700 mb-1">Pilih Santri</label>
+                        <select id="tahsin-santri-id" required class="w-full border p-2 rounded-lg focus:ring-indigo-500 outline-none">
+                            <!-- Options generated by JS -->
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block font-medium text-gray-700 mb-1">Nama Penguji</label>
+                        <input type="text" id="tahsin-penguji" required class="w-full border p-2 rounded-lg focus:ring-indigo-500 outline-none" placeholder="Ustaz / Ustazah">
+                    </div>
+                </div>
+                
+                <!-- Nilai Aspek -->
+                <div class="bg-indigo-50 p-4 rounded-lg border border-indigo-100">
+                    <h4 class="font-bold text-indigo-800 mb-3 border-b border-indigo-200 pb-2">A. Aspek Penilaian (0-100)</h4>
+                    <div class="grid grid-cols-2 gap-3">
+                        <div>
+                            <label class="block text-xs font-medium text-gray-600">1. Makharijul Huruf (25%)</label>
+                            <input type="number" id="th-makhraj" min="0" max="100" required class="w-full border p-1.5 rounded focus:ring-indigo-500 outline-none" oninput="calculateTahsin()">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-medium text-gray-600">2. Tajwid (30%)</label>
+                            <input type="number" id="th-tajwid" min="0" max="100" required class="w-full border p-1.5 rounded focus:ring-indigo-500 outline-none" oninput="calculateTahsin()">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-medium text-gray-600">3. Kelancaran (20%)</label>
+                            <input type="number" id="th-lancar" min="0" max="100" required class="w-full border p-1.5 rounded focus:ring-indigo-500 outline-none" oninput="calculateTahsin()">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-medium text-gray-600">4. Kefasihan (15%)</label>
+                            <input type="number" id="th-fasih" min="0" max="100" required class="w-full border p-1.5 rounded focus:ring-indigo-500 outline-none" oninput="calculateTahsin()">
+                        </div>
+                        <div class="col-span-2 sm:col-span-1">
+                            <label class="block text-xs font-medium text-gray-600">5. Adab & Suara (10%)</label>
+                            <input type="number" id="th-adab" min="0" max="100" required class="w-full border p-1.5 rounded focus:ring-indigo-500 outline-none" oninput="calculateTahsin()">
+                        </div>
+                    </div>
+
+                    <!-- Perhitungan Total -->
+                    <div class="mt-4 pt-3 border-t border-indigo-200 flex justify-between items-center">
+                        <span class="font-bold text-gray-700">Total Nilai Akhir:</span>
+                        <div class="flex items-center">
+                            <span id="th-skor-akhir" class="text-2xl font-bold text-indigo-700">0</span>
+                            <span id="th-predikat" class="ml-2 text-xs font-bold px-2 py-0.5 rounded-full bg-gray-200 text-gray-500">Predikat</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Rekomendasi & Catatan -->
+                <div>
+                    <label class="block font-medium text-gray-700 mb-1">B. Catatan Penguji</label>
+                    <textarea id="th-catatan" rows="2" class="w-full border p-2 rounded-lg focus:ring-indigo-500 outline-none text-xs" placeholder="Tuliskan catatan perbaikan untuk santri..."></textarea>
+                </div>
+                
+                <div>
+                    <label class="block font-medium text-gray-700 mb-1">C. Rekomendasi (Bisa pilih > 1)</label>
+                    <div class="grid grid-cols-2 gap-2 text-xs text-gray-600">
+                        <label class="flex items-center gap-1"><input type="checkbox" value="Lulus Tahsin Dasar" class="th-rekomendasi"> Lulus Tahsin Dasar</label>
+                        <label class="flex items-center gap-1"><input type="checkbox" value="Naik ke Jilid Berikutnya" class="th-rekomendasi"> Naik ke Jilid Berikutnya</label>
+                        <label class="flex items-center gap-1"><input type="checkbox" value="Siap Mengikuti Program Tahfidz" class="th-rekomendasi"> Siap Program Tahfidz</label>
+                        <label class="flex items-center gap-1"><input type="checkbox" value="Perlu Perbaikan Makhraj" class="th-rekomendasi"> Perbaikan Makhraj</label>
+                        <label class="flex items-center gap-1"><input type="checkbox" value="Perlu Perbaikan Tajwid" class="th-rekomendasi"> Perbaikan Tajwid</label>
+                        <label class="flex items-center gap-1"><input type="checkbox" value="Perlu Latihan Kelancaran" class="th-rekomendasi"> Latihan Kelancaran</label>
+                    </div>
+                </div>
+
+                <div class="flex justify-end gap-2 pt-4 border-t sticky bottom-0 bg-white pb-2">
+                    <button type="button" onclick="closeModal('modal-tahsin')" class="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200">Batal</button>
+                    <button type="submit" class="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700">Simpan Penilaian</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Container Tersembunyi Untuk Generate Gambar/PDF (ID Card, Syahadah, Raport, Tahsin) -->
     <div id="print-container" class="fixed -left-[9999px] top-0 bg-gray-200 overflow-visible z-0">
         
         <!-- Template ID Card (Murni QR) -->
@@ -772,6 +898,79 @@
             </div>
         </div>
 
+        <!-- Template Tahsin A4 Portrait -->
+        <div id="template-tahsin" class="a4-portrait shadow-xl text-gray-800 m-4 hidden">
+            <h1 class="text-xl font-bold text-center border-b-2 border-gray-800 pb-2 mb-4 uppercase">LEMBAR PENILAIAN TAHSIN AL-QUR'AN</h1>
+            
+            <table class="w-full text-sm mb-6">
+                <tr><td class="w-32 py-1 font-semibold">MADRASAH</td><td>: <span id="ths-print-lembaga" class="font-bold"></span></td></tr>
+                <tr><td class="py-1 font-semibold">Nama Peserta</td><td>: <span id="ths-print-nama"></span></td></tr>
+                <tr><td class="py-1 font-semibold">Kelas</td><td>: <span id="ths-print-kelas"></span></td></tr>
+                <tr><td class="py-1 font-semibold">Tanggal</td><td>: <span id="ths-print-tanggal"></span></td></tr>
+                <tr><td class="py-1 font-semibold">Penguji</td><td>: <span id="ths-print-penguji"></span></td></tr>
+            </table>
+
+            <h3 class="font-bold text-md mb-2 bg-indigo-50 py-1 px-2 border-l-4 border-indigo-600">A. Aspek Penilaian</h3>
+            <table class="w-full text-sm border-collapse border border-gray-400 mb-2">
+                <thead class="bg-gray-100">
+                    <tr>
+                        <th class="border border-gray-400 p-2 w-10 text-center">No</th>
+                        <th class="border border-gray-400 p-2 text-left">Aspek yang Dinilai</th>
+                        <th class="border border-gray-400 p-2 w-20 text-center">Bobot</th>
+                        <th class="border border-gray-400 p-2 w-24 text-center">Nilai (0-100)</th>
+                        <th class="border border-gray-400 p-2 w-24 text-center">Skor</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr><td class="border border-gray-400 p-2 text-center">1</td><td class="border border-gray-400 p-2">Makharijul Huruf</td><td class="border border-gray-400 p-2 text-center">25%</td><td class="border border-gray-400 p-2 text-center" id="ths-print-n-makhraj"></td><td class="border border-gray-400 p-2 text-center font-semibold" id="ths-print-s-makhraj"></td></tr>
+                    <tr><td class="border border-gray-400 p-2 text-center">2</td><td class="border border-gray-400 p-2">Tajwid</td><td class="border border-gray-400 p-2 text-center">30%</td><td class="border border-gray-400 p-2 text-center" id="ths-print-n-tajwid"></td><td class="border border-gray-400 p-2 text-center font-semibold" id="ths-print-s-tajwid"></td></tr>
+                    <tr><td class="border border-gray-400 p-2 text-center">3</td><td class="border border-gray-400 p-2">Kelancaran Membaca</td><td class="border border-gray-400 p-2 text-center">20%</td><td class="border border-gray-400 p-2 text-center" id="ths-print-n-lancar"></td><td class="border border-gray-400 p-2 text-center font-semibold" id="ths-print-s-lancar"></td></tr>
+                    <tr><td class="border border-gray-400 p-2 text-center">4</td><td class="border border-gray-400 p-2">Kefasihan (Fashahah)</td><td class="border border-gray-400 p-2 text-center">15%</td><td class="border border-gray-400 p-2 text-center" id="ths-print-n-fasih"></td><td class="border border-gray-400 p-2 text-center font-semibold" id="ths-print-s-fasih"></td></tr>
+                    <tr><td class="border border-gray-400 p-2 text-center">5</td><td class="border border-gray-400 p-2">Adab dan Suara</td><td class="border border-gray-400 p-2 text-center">10%</td><td class="border border-gray-400 p-2 text-center" id="ths-print-n-adab"></td><td class="border border-gray-400 p-2 text-center font-semibold" id="ths-print-s-adab"></td></tr>
+                    <tr class="bg-gray-50 font-bold">
+                        <td class="border border-gray-400 p-2 text-center" colspan="2">JUMLAH</td>
+                        <td class="border border-gray-400 p-2 text-center">100%</td>
+                        <td class="border border-gray-400 p-2 text-right">Nilai Akhir = </td>
+                        <td class="border border-gray-400 p-2 text-center text-lg text-indigo-800" id="ths-print-total"></td>
+                    </tr>
+                </tbody>
+            </table>
+            <div class="mb-6 flex justify-end">
+                <span class="bg-gray-200 px-4 py-1 font-bold text-sm border border-gray-400 rounded-sm">Predikat: <span id="ths-print-predikat" class="text-indigo-700 ml-2"></span></span>
+            </div>
+
+            <h3 class="font-bold text-md mb-2 bg-indigo-50 py-1 px-2 border-l-4 border-indigo-600">B. Catatan Penguji</h3>
+            <div class="border border-gray-400 min-h-[60px] p-3 text-sm mb-6 italic" id="ths-print-catatan"></div>
+
+            <h3 class="font-bold text-md mb-2 bg-indigo-50 py-1 px-2 border-l-4 border-indigo-600">C. Rekomendasi</h3>
+            <div class="border border-gray-400 p-3 text-sm mb-8 grid grid-cols-2 gap-y-2" id="ths-print-rekomendasi">
+                <!-- Checkboxes diinjeksi lewat JS -->
+            </div>
+
+            <!-- Tanda Tangan -->
+            <div class="flex justify-between px-16 mt-8">
+                <div class="text-center">
+                    <p class="text-sm mb-20">Penguji,</p>
+                    <p class="font-bold border-b border-gray-800 pb-1" id="ths-print-ttd-penguji">Nama Ustaz</p>
+                </div>
+                <div class="text-center">
+                    <p class="text-sm mb-20">Peserta,</p>
+                    <p class="font-bold border-b border-gray-800 pb-1" id="ths-print-ttd-peserta">Nama Santri</p>
+                </div>
+            </div>
+
+            <!-- Rubrik Info (Footer) -->
+            <div class="mt-auto pt-8">
+                <p class="text-[10px] font-bold border-b border-gray-400 mb-1">Rubrik Penilaian Singkat:</p>
+                <div class="flex gap-4 text-[9px] text-gray-600">
+                    <div><strong>90-100 (Mumtaz):</strong> Sangat Baik, kesalahan hampir tidak ada.</div>
+                    <div><strong>80-89 (Jayyid Jiddan):</strong> Baik, ada sedikit kesalahan ringan.</div>
+                    <div><strong>70-79 (Jayyid):</strong> Cukup, masih ada salah tajwid/makhraj.</div>
+                    <div><strong>< 70:</strong> Kurang, perlu bimbingan.</div>
+                </div>
+            </div>
+        </div>
+
     </div>
 
     <!-- Modal Pop-up Print Preview (UI Kelihatan) -->
@@ -818,8 +1017,24 @@
             SANTRI: 'sipontren_santri',
             JADWAL: 'sipontren_jadwal',
             ABSENSI: 'sipontren_absensi',
-            HAFALAN: 'sipontren_hafalan'
+            HAFALAN: 'sipontren_hafalan',
+            TAHSIN: 'sipontren_tahsin'
         };
+
+        const DAFTAR_SURAT = [
+            "Al-Fatihah", "Al-Baqarah", "Ali 'Imran", "An-Nisa'", "Al-Ma'idah", "Al-An'am", "Al-A'raf", "Al-Anfal", "At-Taubah", "Yunus",
+            "Hud", "Yusuf", "Ar-Ra'd", "Ibrahim", "Al-Hijr", "An-Nahl", "Al-Isra'", "Al-Kahf", "Maryam", "Ta-Ha",
+            "Al-Anbiya'", "Al-Hajj", "Al-Mu'minun", "An-Nur", "Al-Furqan", "Asy-Syu'ara'", "An-Naml", "Al-Qasas", "Al-'Ankabut", "Ar-Rum",
+            "Luqman", "As-Sajdah", "Al-Ahzab", "Saba'", "Fatir", "Yasin", "As-Saffat", "Sad", "Az-Zumar", "Ghafir",
+            "Fussilat", "Asy-Syura", "Az-Zukhruf", "Ad-Dukhan", "Al-Jasiyah", "Al-Ahqaf", "Muhammad", "Al-Fath", "Al-Hujurat", "Qaf",
+            "Az-Zariyat", "At-Tur", "An-Najm", "Al-Qamar", "Ar-Rahman", "Al-Waqi'ah", "Al-Hadid", "Al-Mujadilah", "Al-Hasyr", "Al-Mumtahanah",
+            "As-Saff", "Al-Jumu'ah", "Al-Munafiqun", "At-Taghabun", "At-Talaq", "At-Tahrim", "Al-Mulk", "Al-Qalam", "Al-Haqqah", "Al-Ma'arij",
+            "Nuh", "Al-Jinn", "Al-Muzzammil", "Al-Muddassir", "Al-Qiyamah", "Al-Insan", "Al-Mursalat", "An-Naba'", "An-Nazi'at", "'Abasa",
+            "At-Takwir", "Al-Infitar", "Al-Mutaffifin", "Al-Insyiqaq", "Al-Buruj", "At-Tariq", "Al-A'la", "Al-Ghasyiyah", "Al-Fajr", "Al-Balad",
+            "Asy-Syams", "Al-Lail", "Ad-Duha", "Asy-Syarh", "At-Tin", "Al-'Alaq", "Al-Qadr", "Al-Bayyinah", "Az-Zalzalah", "Al-'Adiyat",
+            "Al-Qari'ah", "At-Takasur", "Al-'Asr", "Al-Humazah", "Al-Fil", "Quraisy", "Al-Ma'un", "Al-Kausar", "Al-Kafirun", "An-Nasr",
+            "Al-Lahab", "Al-Ikhlas", "Al-Falaq", "An-Nas"
+        ];
 
         let html5Qrcode = null;
         let lastScannedId = "";
@@ -832,7 +1047,7 @@
 
         function getSettings() {
             const data = localStorage.getItem(DB_KEY.SETTINGS);
-            return data ? JSON.parse(data) : { nama: 'Santri Mujahid Al Qomariah', logo: '', fonnte: '', gas: '' };
+            return data ? JSON.parse(data) : { nama: 'Santri Mujahid Al Qomariah', logo: '', gas: '' };
         }
 
         function saveData(key, data) {
@@ -870,6 +1085,7 @@
             populateDropdowns();
             renderAbsensiHistory();
             renderHafalanTable();
+            renderTahsinTable();
             
             // Set default date display for absensi
             const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
@@ -894,7 +1110,7 @@
             
             const titles = {
                 'dashboard': 'Dashboard', 'santri': 'Data Santri', 'jadwal': 'Jadwal Kegiatan',
-                'absensi': 'Scan Absensi', 'hafalan': 'Setor Hafalan', 'raport': 'Raport & Laporan', 'pengaturan': 'Pengaturan Sistem'
+                'absensi': 'Scan Absensi', 'hafalan': 'Setor Hafalan', 'tahsin': 'Penilaian Tahsin', 'raport': 'Raport & Laporan', 'pengaturan': 'Pengaturan Sistem'
             };
             document.getElementById('page-title').textContent = titles[tabId];
 
@@ -927,7 +1143,6 @@
             // Fill form
             document.getElementById('set-nama').value = settings.nama;
             document.getElementById('set-logo').value = settings.logo || '';
-            document.getElementById('set-fonnte').value = settings.fonnte || '';
             document.getElementById('set-gas').value = settings.gas || '';
         }
 
@@ -936,7 +1151,6 @@
             const settings = {
                 nama: document.getElementById('set-nama').value,
                 logo: document.getElementById('set-logo').value,
-                fonnte: document.getElementById('set-fonnte').value,
                 gas: document.getElementById('set-gas').value
             };
             localStorage.setItem(DB_KEY.SETTINGS, JSON.stringify(settings));
@@ -1129,19 +1343,30 @@
 
             const selSantriAbs = document.getElementById('absensi-santri-id');
             const selSantriHaf = document.getElementById('hafalan-santri-id');
+            const selSantriTahsin = document.getElementById('tahsin-santri-id');
             const selJadwalAbs = document.getElementById('absensi-jadwal');
 
             selSantriAbs.innerHTML = '<option value="">-- Pilih Santri --</option>';
             selSantriHaf.innerHTML = '<option value="">-- Pilih Santri --</option>';
+            selSantriTahsin.innerHTML = '<option value="">-- Pilih Santri --</option>';
+            
             santris.forEach(s => {
                 const opt = `<option value="${s.id}">${s.id} - ${s.nama}</option>`;
                 selSantriAbs.innerHTML += opt;
                 selSantriHaf.innerHTML += opt;
+                selSantriTahsin.innerHTML += opt;
             });
 
             selJadwalAbs.innerHTML = '';
             jadwals.forEach(j => {
                 selJadwalAbs.innerHTML += `<option value="${j.id}">${j.waktu} - ${j.nama}</option>`;
+            });
+
+            // Populate Dropdown Surat
+            const selSurat = document.getElementById('h-q-surat');
+            selSurat.innerHTML = '<option value="">-- Pilih --</option>';
+            DAFTAR_SURAT.forEach((surat, index) => {
+                selSurat.innerHTML += `<option value="${surat}">${index + 1}. ${surat}</option>`;
             });
         }
 
@@ -1273,7 +1498,10 @@
 
         function submitManualAbsensi(status) {
             const santriId = document.getElementById('absensi-santri-id').value;
-            if(!santriId) return alert('Pilih santri terlebih dahulu!');
+            if(!santriId) {
+                alert('Silahkan pilih nama santri terlebih dahulu di kolom atas!');
+                return;
+            }
             processAbsensi(santriId, status, false);
         }
 
@@ -1281,7 +1509,8 @@
             const jadwalId = document.getElementById('absensi-jadwal').value;
             if(!jadwalId) {
                 if(isScan) playAudioFeedback('error');
-                return alert('Jadwal belum dipilih/tersedia! Silahkan buat di menu Jadwal Kegiatan.');
+                alert('Sesi Kegiatan belum dipilih! Silahkan buat sesi baru di menu Jadwal Kegiatan.');
+                return;
             }
 
             const santri = getData(DB_KEY.SANTRI).find(s => s.id === santriId);
@@ -1304,23 +1533,34 @@
             let absensis = getData(DB_KEY.ABSENSI);
             
             // Cek jika sudah absen di sesi yang sama hari ini
-            const existing = absensis.find(a => a.tanggal === today && a.jadwalId === jadwalId && a.santriId === santriId);
-            if(existing && existing.status === status) {
-                if(isScan) {
-                    playAudioFeedback('error');
-                    document.getElementById('scan-status').innerHTML = `<span class="text-yellow-600"><i class="fas fa-info-circle"></i> ${santri.nama} sudah diabsen.</span>`;
+            const existingIndex = absensis.findIndex(a => a.tanggal === today && a.jadwalId === jadwalId && a.santriId === santriId);
+            
+            if(existingIndex !== -1) {
+                if(absensis[existingIndex].status === status) {
+                    // Beri notifikasi jika status yang diklik sama dengan yang sudah ada
+                    if(isScan) {
+                        playAudioFeedback('error');
+                        document.getElementById('scan-status').innerHTML = `<span class="text-yellow-600"><i class="fas fa-info-circle"></i> ${santri.nama} sudah diabsen.</span>`;
+                    } else {
+                        alert(`Perhatian: ${santri.nama} sudah berstatus ${status} pada sesi ini.`);
+                    }
+                    return; 
+                } else {
+                    // Update status jika mengklik status yang BERBEDA (misal mengubah Alpa menjadi Sakit)
+                    absensis[existingIndex].status = status;
+                    absensis[existingIndex].waktu = time;
                 }
-                return; 
+            } else {
+                // Jika belum ada data di sesi ini, catat sebagai data baru
+                absensis.unshift({
+                    id: 'ABS-' + Date.now(),
+                    tanggal: today,
+                    waktu: time,
+                    santriId: santriId,
+                    jadwalId: jadwalId,
+                    status: status
+                });
             }
-
-            absensis.unshift({ // Add ke urutan paling atas
-                id: 'ABS-' + Date.now(),
-                tanggal: today,
-                waktu: time,
-                santriId: santriId,
-                jadwalId: jadwalId,
-                status: status
-            });
 
             saveData(DB_KEY.ABSENSI, absensis);
             renderAbsensiHistory();
@@ -1342,31 +1582,37 @@
                     if(html5Qrcode && html5Qrcode.isScanning) stat.innerHTML = '<span class="text-teal-600"><i class="fas fa-camera"></i> Kamera Aktif - Arahkan QR Code</span>';
                 }, 1500);
             } else {
-                showToast(`✅ ${santri.nama} - ${status}`);
-            }
-
-            // Send WA Notification via Fonnte
-            if(santri.wa) {
-                const settings = getSettings();
-                if(settings.fonnte) {
-                    const msg = `Assalamualaikum.\n\nInfo Kehadiran SIPONTREN:\nNama: *${santri.nama}*\nStatus: *${status}*\nSesi: ${jadwal.nama}\nWaktu: ${today} ${time}\n\nTerima kasih.`;
-                    sendWaFonnte(santri.wa, msg, settings.fonnte);
-                }
+                // Notifikasi sukses untuk manual input
+                showToast(`✅ Status ${santri.nama} tersimpan: ${status}`);
             }
         }
 
-        async function sendWaFonnte(phone, message, token) {
-            const data = new FormData();
-            data.append('target', phone);
-            data.append('message', message);
-            try {
-                // Background fetch, no need to await for UI
-                fetch('https://api.fonnte.com/send', {
-                    method: 'POST',
-                    headers: { 'Authorization': token },
-                    body: data
-                }).catch(e => console.log('Fonnte Request Error:', e));
-            } catch(e) { console.error('WA Error', e); }
+        function kirimPesanWA(absensiId) {
+            const absensi = getData(DB_KEY.ABSENSI).find(a => a.id === absensiId);
+            if(!absensi) return;
+
+            const santri = getData(DB_KEY.SANTRI).find(s => s.id === absensi.santriId);
+            const jadwal = getData(DB_KEY.JADWAL).find(j => j.id === absensi.jadwalId);
+
+            if(!santri || !santri.wa) {
+                return alert('Nomor WhatsApp santri / orang tua tidak tersedia di data santri!');
+            }
+
+            // Jika Anda ingin pesan dikirim KHUSUS ke nomor Anda sendiri (bukan ortu santri), 
+            // Anda bisa mengganti variabel phone di bawah menjadi: let phone = "628xxxxxxxx"; 
+            let phone = santri.wa;
+
+            // Format nomor telepon agar valid untuk link WA (mengganti 08 menjadi 628)
+            if (phone.startsWith('0')) {
+                phone = '62' + phone.substring(1);
+            }
+
+            const msg = `Assalamualaikum.\n\nInfo Kehadiran SIPONTREN:\nNama: *${santri.nama}*\nStatus: *${absensi.status}*\nSesi: ${jadwal ? jadwal.nama : 'Unknown'}\nWaktu: ${absensi.tanggal} ${absensi.waktu}\n\nTerima kasih.`;
+            
+            // Redirect ke link wa.me yang akan otomatis membuka WhatsApp/WhatsApp Web
+            const waLink = `https://wa.me/${phone}?text=${encodeURIComponent(msg)}`;
+            window.open(waLink, '_blank');
+            showToast('Membuka aplikasi WhatsApp...');
         }
 
         function renderAbsensiHistory() {
@@ -1382,7 +1628,7 @@
             const todayAbsen = absensis.filter(a => a.tanggal === today).slice(0, 20);
 
             if(todayAbsen.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="4" class="p-4 text-center text-gray-500">Belum ada absensi hari ini.</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="5" class="p-4 text-center text-gray-500">Belum ada absensi hari ini.</td></tr>`;
                 return;
             }
 
@@ -1401,6 +1647,11 @@
                     <td class="p-2 font-medium">${santri.nama}</td>
                     <td class="p-2 text-xs">${jadwal.nama}</td>
                     <td class="p-2"><span class="px-2 py-0.5 rounded text-xs font-semibold ${badgeClass}">${a.status}</span></td>
+                    <td class="p-2 text-center">
+                        <button onclick="kirimPesanWA('${a.id}')" class="text-teal-600 hover:text-teal-800 bg-teal-50 hover:bg-teal-100 p-1.5 rounded transition shadow-sm text-xs" title="Kirim Info ke WA">
+                            <i class="fab fa-whatsapp text-sm"></i> Kirim
+                        </button>
+                    </td>
                 `;
                 tbody.appendChild(tr);
             });
@@ -1428,6 +1679,9 @@
                 const j = document.getElementById('h-q-juz').value;
                 const s = document.getElementById('h-q-surat').value;
                 const a = document.getElementById('h-q-ayat').value;
+                
+                if(!s) return alert("Pilih Nama Surat terlebih dahulu!");
+                
                 dataDetail = `Juz ${j}, Surat ${s}, Ayat ${a}`;
             } else {
                 const j = document.getElementById('h-nq-judul').value;
@@ -1536,6 +1790,161 @@
             openModal('modal-leaderboard');
         }
 
+        // --- 8B. PENILAIAN TAHSIN MODULE ---
+        function calculateTahsin() {
+            const m = parseFloat(document.getElementById('th-makhraj').value) || 0;
+            const t = parseFloat(document.getElementById('th-tajwid').value) || 0;
+            const l = parseFloat(document.getElementById('th-lancar').value) || 0;
+            const f = parseFloat(document.getElementById('th-fasih').value) || 0;
+            const a = parseFloat(document.getElementById('th-adab').value) || 0;
+
+            const skor = (m * 0.25) + (t * 0.30) + (l * 0.20) + (f * 0.15) + (a * 0.10);
+            const skorAkhir = skor.toFixed(1);
+            
+            document.getElementById('th-skor-akhir').textContent = skorAkhir;
+
+            let predikat = "";
+            let pColor = "text-gray-500 bg-gray-200";
+            if(skor >= 90) { predikat = "A (Mumtaz)"; pColor = "text-emerald-800 bg-emerald-200"; }
+            else if(skor >= 80) { predikat = "B (Jayyid Jiddan)"; pColor = "text-teal-800 bg-teal-200"; }
+            else if(skor >= 70) { predikat = "C (Jayyid)"; pColor = "text-blue-800 bg-blue-200"; }
+            else if(skor >= 60) { predikat = "D (Maqbul)"; pColor = "text-yellow-800 bg-yellow-200"; }
+            else { predikat = "E (Perlu Pembinaan)"; pColor = "text-red-800 bg-red-200"; }
+
+            const pEl = document.getElementById('th-predikat');
+            pEl.textContent = predikat;
+            pEl.className = `ml-2 text-xs font-bold px-2 py-0.5 rounded-full ${pColor}`;
+            
+            return { skor: skorAkhir, predikat: predikat };
+        }
+
+        function saveTahsin(e) {
+            e.preventDefault();
+            const santriId = document.getElementById('tahsin-santri-id').value;
+            const penguji = document.getElementById('tahsin-penguji').value;
+            const catatan = document.getElementById('th-catatan').value;
+            
+            // Get Checkboxes
+            const rekElements = document.querySelectorAll('.th-rekomendasi:checked');
+            let rekomendasi = [];
+            rekElements.forEach(el => rekomendasi.push(el.value));
+
+            const calc = calculateTahsin();
+            const dataNilai = {
+                makhraj: document.getElementById('th-makhraj').value,
+                tajwid: document.getElementById('th-tajwid').value,
+                lancar: document.getElementById('th-lancar').value,
+                fasih: document.getElementById('th-fasih').value,
+                adab: document.getElementById('th-adab').value,
+            };
+
+            const tahsins = getData(DB_KEY.TAHSIN);
+            tahsins.unshift({
+                id: 'THS-' + Date.now(),
+                tanggal: new Date().toISOString().split('T')[0],
+                santriId: santriId,
+                penguji: penguji,
+                nilai: dataNilai,
+                nilaiAkhir: calc.skor,
+                predikat: calc.predikat,
+                catatan: catatan,
+                rekomendasi: rekomendasi
+            });
+
+            saveData(DB_KEY.TAHSIN, tahsins);
+            closeModal('modal-tahsin');
+            document.getElementById('form-tahsin').reset();
+            document.getElementById('th-skor-akhir').textContent = "0";
+            document.getElementById('th-predikat').textContent = "Predikat";
+            renderTahsinTable();
+            showToast('✅ Nilai Tahsin berhasil disimpan');
+        }
+
+        function renderTahsinTable() {
+            const tahsins = getData(DB_KEY.TAHSIN);
+            const santris = getData(DB_KEY.SANTRI);
+            const tbody = document.getElementById('table-tahsin');
+            tbody.innerHTML = '';
+
+            if(tahsins.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="6" class="p-4 text-center text-gray-500">Belum ada riwayat penilaian.</td></tr>`;
+                return;
+            }
+
+            tahsins.forEach(t => {
+                const santri = santris.find(s => s.id === t.santriId) || { nama: 'Unknown' };
+                const tr = document.createElement('tr');
+                
+                let pClass = "text-gray-600";
+                if(t.predikat.includes('A')) pClass = "text-emerald-600 font-bold";
+                else if(t.predikat.includes('B')) pClass = "text-teal-600 font-bold";
+                else if(t.predikat.includes('E')) pClass = "text-red-600 font-bold";
+
+                tr.innerHTML = `
+                    <td class="p-4 text-xs text-gray-500">${t.tanggal}</td>
+                    <td class="p-4 font-medium">${santri.nama}</td>
+                    <td class="p-4 text-xs text-gray-700">${t.penguji}</td>
+                    <td class="p-4 text-center font-bold text-indigo-700">${t.nilaiAkhir}</td>
+                    <td class="p-4 text-center text-xs ${pClass}">${t.predikat}</td>
+                    <td class="p-4 text-center">
+                        <button onclick="cetakTahsin('${t.id}')" class="text-indigo-600 hover:text-indigo-800 bg-indigo-50 hover:bg-indigo-100 p-2 rounded transition shadow-sm text-xs" title="Cetak Laporan">
+                            <i class="fas fa-print mr-1"></i> Cetak A4
+                        </button>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        function cetakTahsin(id) {
+            const tahsin = getData(DB_KEY.TAHSIN).find(t => t.id === id);
+            if(!tahsin) return;
+            const santri = getData(DB_KEY.SANTRI).find(s => s.id === tahsin.santriId);
+            const settings = getSettings();
+
+            document.getElementById('ths-print-lembaga').textContent = settings.nama;
+            document.getElementById('ths-print-nama').textContent = santri ? santri.nama : 'Unknown';
+            document.getElementById('ths-print-kelas').textContent = santri ? santri.kelas : '-';
+            
+            const dateObj = new Date(tahsin.tanggal);
+            document.getElementById('ths-print-tanggal').textContent = dateObj.toLocaleDateString('id-ID', { year: 'numeric', month: 'long', day: 'numeric' });
+            document.getElementById('ths-print-penguji').textContent = tahsin.penguji;
+
+            // Injeksi Tabel Nilai
+            const n = tahsin.nilai;
+            document.getElementById('ths-print-n-makhraj').textContent = n.makhraj;
+            document.getElementById('ths-print-n-tajwid').textContent = n.tajwid;
+            document.getElementById('ths-print-n-lancar').textContent = n.lancar;
+            document.getElementById('ths-print-n-fasih').textContent = n.fasih;
+            document.getElementById('ths-print-n-adab').textContent = n.adab;
+
+            document.getElementById('ths-print-s-makhraj').textContent = (n.makhraj * 0.25).toFixed(1);
+            document.getElementById('ths-print-s-tajwid').textContent = (n.tajwid * 0.30).toFixed(1);
+            document.getElementById('ths-print-s-lancar').textContent = (n.lancar * 0.20).toFixed(1);
+            document.getElementById('ths-print-s-fasih').textContent = (n.fasih * 0.15).toFixed(1);
+            document.getElementById('ths-print-s-adab').textContent = (n.adab * 0.10).toFixed(1);
+
+            document.getElementById('ths-print-total').textContent = tahsin.nilaiAkhir;
+            document.getElementById('ths-print-predikat').textContent = tahsin.predikat;
+            document.getElementById('ths-print-catatan').textContent = tahsin.catatan || "- Tidak ada catatan khusus -";
+
+            // Injeksi Checkbox Rekomendasi
+            const rekContainer = document.getElementById('ths-print-rekomendasi');
+            rekContainer.innerHTML = '';
+            const allRek = ["Lulus Tahsin Dasar", "Naik ke Jilid Berikutnya", "Siap Mengikuti Program Tahfidz", "Perlu Perbaikan Makhraj", "Perlu Perbaikan Tajwid", "Perlu Latihan Kelancaran"];
+            
+            allRek.forEach(r => {
+                const isChecked = tahsin.rekomendasi.includes(r);
+                const checkIcon = isChecked ? '<i class="fas fa-check-square text-indigo-700"></i>' : '<i class="far fa-square text-gray-400"></i>';
+                rekContainer.innerHTML += `<div class="flex items-center gap-2">${checkIcon} <span>${r}</span></div>`;
+            });
+
+            document.getElementById('ths-print-ttd-penguji').textContent = tahsin.penguji;
+            document.getElementById('ths-print-ttd-peserta').textContent = santri ? santri.nama : '';
+
+            // Print
+            captureElement('template-tahsin', `Penilaian_Tahsin_${santri ? santri.nama.replace(/\s+/g, '_') : 'Santri'}.png`);
+        }
 
         // --- 9. HTML2CANVAS EXPORT (ID Card, Syahadah, Raport) ---
         
@@ -1632,6 +2041,69 @@
             captureElement('template-syahadah', `Syahadah_${santri.nama.replace(/\s+/g, '_')}.png`);
         }
 
+        // FUNGSI BARU: CETAK SYAHADAH GLOBAL (REKAPITULASI HAFALAN PER PERIODE)
+        function cetakSyahadahGlobal(santriId, monthStr) {
+            const santri = getData(DB_KEY.SANTRI).find(s => s.id === santriId);
+            const settings = getSettings();
+            
+            // Ambil semua hafalan Al-Qur'an santri ini
+            const allHafalan = getData(DB_KEY.HAFALAN).filter(h => h.santriId === santriId && h.kategori === 'Quran');
+            
+            // Hafalan khusus di bulan/periode terpilih
+            const hafSantriBulanIni = allHafalan.filter(h => h.tanggal.startsWith(monthStr));
+            
+            if(hafSantriBulanIni.length === 0 && allHafalan.length === 0) {
+                return alert('Belum ada riwayat setoran hafalan Al-Qur\'an untuk santri ini.');
+            }
+
+            // Ekstrak Total Juz All Time (Unik)
+            let juzSetTotal = new Set();
+            allHafalan.forEach(h => {
+                const match = h.detail.match(/Juz (\d+)/);
+                if(match) juzSetTotal.add(parseInt(match[1]));
+            });
+            
+            // Ekstrak Juz yang disetorkan KHUSUS di bulan terpilih
+            let juzSetBulanIni = new Set();
+            hafSantriBulanIni.forEach(h => {
+                const match = h.detail.match(/Juz (\d+)/);
+                if(match) juzSetBulanIni.add(parseInt(match[1]));
+            });
+
+            // Urutkan angka Juz
+            const arrJuzBulanIni = Array.from(juzSetBulanIni).sort((a,b) => a-b);
+            const strJuzBulanIni = arrJuzBulanIni.join(', ');
+
+            // Format Nama Bulan
+            const [y, m] = monthStr.split('-');
+            const d = new Date(y, m-1, 1);
+            const monthName = d.toLocaleDateString('id-ID', { month: 'long', year: 'numeric' });
+
+            // Suntik Data ke Template
+            document.getElementById('syh-lembaga').textContent = settings.nama;
+            document.getElementById('syh-nama').textContent = santri.nama;
+            document.getElementById('syh-id').textContent = 'ID: ' + santri.id;
+            
+            document.getElementById('syh-kategori').textContent = "Al-Qur'an (Rekapitulasi Global)";
+            
+            // Tampilkan Detail Total Pencapaian & Setoran Bulan Ini
+            document.getElementById('syh-detail').innerHTML = `
+                Total Hafalan Tercapai: <span class="text-emerald-600">${juzSetTotal.size} Juz</span><br>
+                <span class="text-lg text-gray-600 font-normal mt-2 block">Juz yang disetorkan pada ${monthName}: ${strJuzBulanIni || '-'}</span>
+            `;
+            
+            document.getElementById('syh-predikat').textContent = "TERUJI (" + monthName.toUpperCase() + ")";
+            
+            document.getElementById('syh-tanggal').textContent = new Date().toLocaleDateString('id-ID', { year: 'numeric', month: 'long', day: 'numeric' });
+            document.getElementById('syh-penyimak').textContent = "Pengurus Tahfidz";
+
+            // Munculkan untuk dicapture
+            const template = document.getElementById('template-syahadah');
+            template.classList.remove('hidden');
+            
+            captureElement('template-syahadah', `Syahadah_Rekap_${santri.nama.replace(/\s+/g, '_')}_${monthStr}.png`);
+        }
+
         // --- 10. RAPORT MODULE ---
         function generateLaporanGlobal() {
             const filterMonth = document.getElementById('filter-raport-month').value; // Format: YYYY-MM
@@ -1662,9 +2134,12 @@
                     <td class="p-2 border text-center">${izin}</td>
                     <td class="p-2 border text-center">${sakit}</td>
                     <td class="p-2 border text-center text-red-600">${alpa}</td>
-                    <td class="p-2 border text-center bg-gray-50 font-semibold">${hafSantri}</td>
+                    <td class="p-2 border text-center bg-gray-50 font-semibold">${hafSantri} kali</td>
                     <td class="p-2 border text-center">
-                        <button onclick="cetakRaport('${s.id}', '${filterMonth}')" class="bg-teal-600 hover:bg-teal-700 text-white p-1.5 rounded text-xs transition">Preview Raport</button>
+                        <div class="flex flex-col gap-1 items-center">
+                            <button onclick="cetakRaport('${s.id}', '${filterMonth}')" class="bg-teal-600 hover:bg-teal-700 text-white px-2 py-1.5 rounded text-xs transition w-full shadow-sm"><i class="fas fa-file-alt mr-1"></i> Raport</button>
+                            <button onclick="cetakSyahadahGlobal('${s.id}', '${filterMonth}')" class="bg-emerald-600 hover:bg-emerald-700 text-white px-2 py-1.5 rounded text-xs transition w-full shadow-sm"><i class="fas fa-certificate mr-1"></i> Syahadah Global</button>
+                        </div>
                     </td>
                 `;
                 tbody.appendChild(tr);
@@ -1730,7 +2205,8 @@
                 santri: getData(DB_KEY.SANTRI),
                 jadwal: getData(DB_KEY.JADWAL),
                 absensi: getData(DB_KEY.ABSENSI),
-                hafalan: getData(DB_KEY.HAFALAN)
+                hafalan: getData(DB_KEY.HAFALAN),
+                tahsin: getData(DB_KEY.TAHSIN)
             };
             
             const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(data));
@@ -1754,6 +2230,8 @@
                         saveData(DB_KEY.JADWAL, data.jadwal);
                         saveData(DB_KEY.ABSENSI, data.absensi);
                         saveData(DB_KEY.HAFALAN, data.hafalan);
+                        if(data.tahsin) saveData(DB_KEY.TAHSIN, data.tahsin);
+                        
                         alert("Data berhasil di-restore! Aplikasi akan dimuat ulang.");
                         location.reload();
                     } else {
@@ -1788,7 +2266,8 @@
                             santri: getData(DB_KEY.SANTRI),
                             jadwal: getData(DB_KEY.JADWAL),
                             absensi: getData(DB_KEY.ABSENSI),
-                            hafalan: getData(DB_KEY.HAFALAN)
+                            hafalan: getData(DB_KEY.HAFALAN),
+                            tahsin: getData(DB_KEY.TAHSIN)
                         }
                     };
                     const response = await fetch(settings.gas, {
@@ -1812,6 +2291,8 @@
                         saveData(DB_KEY.JADWAL, data.jadwal);
                         saveData(DB_KEY.ABSENSI, data.absensi);
                         saveData(DB_KEY.HAFALAN, data.hafalan);
+                        if(data.tahsin) saveData(DB_KEY.TAHSIN, data.tahsin);
+                        
                         alert('Data berhasil di-Pull dari Google Sheets. Memuat ulang...');
                         location.reload();
                     } else {
