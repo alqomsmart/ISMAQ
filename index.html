@@ -101,6 +101,15 @@
 
         /* Loading Overlay */
         #loading-overlay { display: none; z-index: 9999; }
+        
+        /* Animation for Modals */
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .animate-fade-in-up {
+            animation: fadeInUp 0.3s ease-out forwards;
+        }
     </style>
 </head>
 <body class="text-gray-800 h-screen overflow-hidden flex bg-gray-50">
@@ -151,7 +160,7 @@
         </nav>
 
         <div class="p-4 border-t border-teal-600/50 text-xs text-teal-200 text-center">
-            v1.6 &copy; 2026 SIPONTREN
+            v1.8 &copy; 2026 SIPONTREN
         </div>
     </aside>
 
@@ -555,6 +564,23 @@
 
     <!-- ================== MODALS ================== -->
     
+    <!-- Modal Custom Confirm (Replacement for window.confirm) -->
+    <div id="modal-confirm" class="fixed inset-0 bg-black bg-opacity-50 hidden z-[9999] flex items-center justify-center p-4">
+        <div class="bg-white rounded-xl shadow-xl w-full max-w-sm overflow-hidden animate-fade-in-up">
+            <div class="p-5 text-center">
+                <div class="w-12 h-12 rounded-full bg-red-100 text-red-600 flex items-center justify-center mx-auto mb-4 text-xl">
+                    <i class="fas fa-exclamation-triangle"></i>
+                </div>
+                <h3 class="font-bold text-lg text-gray-800 mb-2">Konfirmasi</h3>
+                <p id="confirm-message" class="text-sm text-gray-600 mb-6">Apakah Anda yakin?</p>
+                <div class="flex justify-center gap-3">
+                    <button id="btn-confirm-cancel" class="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 font-medium">Batal</button>
+                    <button id="btn-confirm-ok" class="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 font-medium">Ya, Lanjutkan</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- Modal Tambah/Edit Santri -->
     <div id="modal-santri" class="fixed inset-0 bg-black bg-opacity-50 hidden z-50 flex items-center justify-center p-4">
         <div class="bg-white rounded-xl shadow-xl w-full max-w-md overflow-hidden animate-fade-in-up">
@@ -629,7 +655,7 @@
 
     <!-- Modal Input Hafalan -->
     <div id="modal-hafalan" class="fixed inset-0 bg-black bg-opacity-50 hidden z-50 flex items-center justify-center p-4">
-        <div class="bg-white rounded-xl shadow-xl w-full max-w-md overflow-hidden">
+        <div class="bg-white rounded-xl shadow-xl w-full max-w-lg overflow-hidden">
             <div class="bg-emerald-600 px-4 py-3 flex justify-between items-center text-white">
                 <h3 class="font-bold">Input Setoran Hafalan</h3>
                 <button onclick="closeModal('modal-hafalan')" class="hover:text-gray-200"><i class="fas fa-times"></i></button>
@@ -650,21 +676,28 @@
                 </div>
                 
                 <!-- Field Quran -->
-                <div id="field-quran" class="grid grid-cols-3 gap-2 p-3 bg-emerald-50 rounded-lg border border-emerald-100">
-                    <div>
+                <div id="field-quran" class="grid grid-cols-1 sm:grid-cols-4 gap-2 p-3 bg-emerald-50 rounded-lg border border-emerald-100">
+                    <div class="sm:col-span-1">
                         <label class="block text-xs font-medium text-gray-600 mb-1">Juz</label>
-                        <input type="number" id="h-q-juz" min="1" max="30" class="w-full border p-2 rounded focus:ring-emerald-500 outline-none">
+                        <input type="number" id="h-q-juz" min="1" max="30" class="w-full border p-2 rounded focus:ring-emerald-500 outline-none text-xs">
                     </div>
-                    <div>
-                        <label class="block text-xs font-medium text-gray-600 mb-1">Surat</label>
+                    <div class="sm:col-span-1">
+                        <label class="block text-xs font-medium text-gray-600 mb-1">Dari Surat</label>
                         <select id="h-q-surat" class="w-full border p-2 rounded focus:ring-emerald-500 outline-none text-xs">
                             <option value="">-- Pilih --</option>
                             <!-- Otomatis diisi oleh JavaScript -->
                         </select>
                     </div>
-                    <div>
-                        <label class="block text-xs font-medium text-gray-600 mb-1">Ayat</label>
-                        <input type="text" id="h-q-ayat" placeholder="1-10" class="w-full border p-2 rounded focus:ring-emerald-500 outline-none">
+                    <div class="sm:col-span-1">
+                        <label class="block text-xs font-medium text-gray-600 mb-1">S.d Surat (Opsi)</label>
+                        <select id="h-q-surat-sampai" class="w-full border p-2 rounded focus:ring-emerald-500 outline-none text-xs">
+                            <option value="">-- Pilih --</option>
+                            <!-- Otomatis diisi oleh JavaScript -->
+                        </select>
+                    </div>
+                    <div class="sm:col-span-1">
+                        <label class="block text-xs font-medium text-gray-600 mb-1">Ayat (Opsional)</label>
+                        <input type="text" id="h-q-ayat" placeholder="Kosong = Full" class="w-full border p-2 rounded focus:ring-emerald-500 outline-none text-xs">
                     </div>
                 </div>
 
@@ -1043,6 +1076,7 @@
         let html5Qrcode = null;
         let lastScannedId = "";
         let scanDebounceTimer = null;
+        let pendingConfirmCallback = null;
 
         function getData(key) {
             const data = localStorage.getItem(key);
@@ -1078,6 +1112,18 @@
             });
             document.getElementById('close-sidebar').addEventListener('click', () => {
                 document.getElementById('sidebar').classList.add('-translate-x-full');
+            });
+            
+            // Confirm Modal Toggles
+            document.getElementById('btn-confirm-cancel').addEventListener('click', () => {
+                document.getElementById('modal-confirm').classList.add('hidden');
+                pendingConfirmCallback = null;
+            });
+            
+            document.getElementById('btn-confirm-ok').addEventListener('click', () => {
+                document.getElementById('modal-confirm').classList.add('hidden');
+                if(pendingConfirmCallback) pendingConfirmCallback();
+                pendingConfirmCallback = null;
             });
         });
 
@@ -1129,6 +1175,12 @@
         function closeModal(id) {
             document.getElementById(id).classList.add('hidden');
         }
+        
+        function showCustomConfirm(message, callback) {
+            document.getElementById('confirm-message').textContent = message;
+            document.getElementById('modal-confirm').classList.remove('hidden');
+            pendingConfirmCallback = callback;
+        }
 
         // --- 3. PENGATURAN MODULE ---
         function applySettings() {
@@ -1159,7 +1211,7 @@
             };
             localStorage.setItem(DB_KEY.SETTINGS, JSON.stringify(settings));
             applySettings();
-            alert('Pengaturan berhasil disimpan!');
+            showToast('✅ Pengaturan berhasil disimpan!');
         }
 
         // --- 4. DASHBOARD MODULE ---
@@ -1250,6 +1302,7 @@
             renderDashboard();
             populateDropdowns();
             document.getElementById('form-santri').reset();
+            showToast('✅ Data Santri tersimpan!');
         }
 
         function editSantri(id) {
@@ -1282,14 +1335,15 @@
         });
 
         function deleteSantri(id) {
-            if(confirm('Yakin ingin menghapus santri ini? Data absensi & hafalannya akan kehilangan referensi nama.')) {
+            showCustomConfirm('Yakin ingin menghapus santri ini? Data absensi & hafalannya akan kehilangan referensi nama.', () => {
                 let santris = getData(DB_KEY.SANTRI);
                 santris = santris.filter(s => s.id !== id);
                 saveData(DB_KEY.SANTRI, santris);
                 renderSantriTable();
                 renderDashboard();
                 populateDropdowns();
-            }
+                showToast('✅ Santri berhasil dihapus.');
+            });
         }
 
         // --- 6. JADWAL MODULE ---
@@ -1329,16 +1383,18 @@
             document.getElementById('form-jadwal').reset();
             renderJadwalTable();
             populateDropdowns();
+            showToast('✅ Sesi berhasil ditambahkan!');
         }
 
         function deleteJadwal(id) {
-            if(confirm('Hapus jadwal ini?')) {
+            showCustomConfirm('Hapus jadwal ini?', () => {
                 let jadwals = getData(DB_KEY.JADWAL);
                 jadwals = jadwals.filter(j => j.id !== id);
                 saveData(DB_KEY.JADWAL, jadwals);
                 renderJadwalTable();
                 populateDropdowns();
-            }
+                showToast('✅ Jadwal dihapus.');
+            });
         }
 
         function populateDropdowns() {
@@ -1368,9 +1424,13 @@
 
             // Populate Dropdown Surat
             const selSurat = document.getElementById('h-q-surat');
+            const selSuratSampai = document.getElementById('h-q-surat-sampai');
             selSurat.innerHTML = '<option value="">-- Pilih --</option>';
+            selSuratSampai.innerHTML = '<option value="">-- Pilih --</option>';
             DAFTAR_SURAT.forEach((surat, index) => {
-                selSurat.innerHTML += `<option value="${surat}">${index + 1}. ${surat}</option>`;
+                const opt = `<option value="${surat}">${index + 1}. ${surat}</option>`;
+                selSurat.innerHTML += opt;
+                selSuratSampai.innerHTML += opt;
             });
         }
 
@@ -1503,7 +1563,7 @@
         function submitManualAbsensi(status) {
             const santriId = document.getElementById('absensi-santri-id').value;
             if(!santriId) {
-                alert('Silahkan pilih nama santri terlebih dahulu di kolom atas!');
+                showToast('⚠️ Silahkan pilih nama santri terlebih dahulu di kolom atas!');
                 return;
             }
             processAbsensi(santriId, status, false);
@@ -1513,7 +1573,7 @@
             const jadwalId = document.getElementById('absensi-jadwal').value;
             if(!jadwalId) {
                 if(isScan) playAudioFeedback('error');
-                alert('Sesi Kegiatan belum dipilih! Silahkan buat sesi baru di menu Jadwal Kegiatan.');
+                showToast('⚠️ Sesi Kegiatan belum dipilih! Silahkan buat di menu Jadwal.');
                 return;
             }
 
@@ -1525,7 +1585,7 @@
                     stat.innerHTML = `<span class="text-red-600 font-bold"><i class="fas fa-times-circle"></i> QR Tidak Dikenal (${santriId})</span>`;
                     setTimeout(() => { if(html5Qrcode && html5Qrcode.isScanning) stat.innerHTML = '<span class="text-teal-600"><i class="fas fa-camera"></i> Kamera Aktif - Arahkan QR Code</span>'; }, 2000);
                 } else {
-                    alert('Data santri tidak ditemukan!');
+                    showToast('❌ Data santri tidak ditemukan!');
                 }
                 return;
             }
@@ -1546,7 +1606,7 @@
                         playAudioFeedback('error');
                         document.getElementById('scan-status').innerHTML = `<span class="text-yellow-600"><i class="fas fa-info-circle"></i> ${santri.nama} sudah diabsen.</span>`;
                     } else {
-                        alert(`Perhatian: ${santri.nama} sudah berstatus ${status} pada sesi ini.`);
+                        showToast(`ℹ️ Perhatian: ${santri.nama} sudah berstatus ${status} pada sesi ini.`);
                     }
                     return; 
                 } else {
@@ -1599,7 +1659,7 @@
             const jadwal = getData(DB_KEY.JADWAL).find(j => j.id === absensi.jadwalId);
 
             if(!santri || !santri.wa) {
-                return alert('Nomor WhatsApp santri / orang tua tidak tersedia di data santri!');
+                return showToast('⚠️ Nomor WhatsApp santri / orang tua tidak tersedia!');
             }
 
             // Jika Anda ingin pesan dikirim KHUSUS ke nomor Anda sendiri (bukan ortu santri), 
@@ -1682,11 +1742,25 @@
             if(kategori === 'Quran') {
                 const j = document.getElementById('h-q-juz').value;
                 const s = document.getElementById('h-q-surat').value;
+                const s2 = document.getElementById('h-q-surat-sampai').value;
                 const a = document.getElementById('h-q-ayat').value;
                 
-                if(!s) return alert("Pilih Nama Surat terlebih dahulu!");
+                if(!s) return showToast("⚠️ Pilih Nama Surat terlebih dahulu!");
                 
-                dataDetail = `Juz ${j}, Surat ${s}, Ayat ${a}`;
+                let suratStr = s;
+                if(s2 && s2 !== s) {
+                    suratStr = `${s} s.d. ${s2}`;
+                }
+                
+                // Logika Pintar untuk Ayat
+                let ayatStr = "";
+                if (a.trim() !== "") {
+                    ayatStr = `, Ayat ${a}`; // Jika diisi: , Ayat 1-10
+                } else {
+                    ayatStr = ` (Seluruh Ayat)`; // Jika dikosongkan: (Seluruh Ayat)
+                }
+                
+                dataDetail = `Juz ${j}, Surat ${suratStr}${ayatStr}`;
             } else {
                 const j = document.getElementById('h-nq-judul').value;
                 const b = document.getElementById('h-nq-baris').value;
@@ -1956,7 +2030,7 @@
             const santris = getData(DB_KEY.SANTRI);
             
             if (tahsins.length === 0) {
-                return alert("Belum ada data penilaian Tahsin untuk diekspor.");
+                return showToast("⚠️ Belum ada data penilaian Tahsin untuk diekspor.");
             }
 
             // Header kolom untuk file Excel/CSV
@@ -2045,7 +2119,7 @@
                 }, 'image/png', 1.0);
             } catch (error) {
                 console.error("Canvas Export Error", error);
-                alert("Terjadi kesalahan saat memproses gambar.");
+                showToast("❌ Terjadi kesalahan saat memproses gambar.");
                 element.classList.add('hidden');
                 showLoading(false);
             }
@@ -2109,7 +2183,7 @@
             const hafSantriBulanIni = allHafalan.filter(h => h.tanggal.startsWith(monthStr));
             
             if(hafSantriBulanIni.length === 0 && allHafalan.length === 0) {
-                return alert('Belum ada riwayat setoran hafalan Al-Qur\'an untuk santri ini.');
+                return showToast('⚠️ Belum ada riwayat setoran hafalan Al-Qur\'an untuk santri ini.');
             }
 
             // Ekstrak Total Juz All Time (Unik)
@@ -2163,7 +2237,7 @@
         // --- 10. RAPORT MODULE ---
         function generateLaporanGlobal() {
             const filterMonth = document.getElementById('filter-raport-month').value; // Format: YYYY-MM
-            if(!filterMonth) return alert('Pilih bulan dan tahun terlebih dahulu!');
+            if(!filterMonth) return showToast('⚠️ Pilih bulan dan tahun terlebih dahulu!');
 
             const santris = getData(DB_KEY.SANTRI);
             const absensis = getData(DB_KEY.ABSENSI);
@@ -2193,7 +2267,7 @@
                     <td class="p-2 border text-center bg-gray-50 font-semibold">${hafSantri} kali</td>
                     <td class="p-2 border text-center">
                         <div class="flex flex-col gap-1 items-center">
-                            <button onclick="cetakRaport('${s.id}', '${filterMonth}')" class="bg-teal-600 hover:bg-teal-700 text-white px-2 py-1.5 rounded text-xs transition w-full shadow-sm"><i class="fas fa-file-alt mr-1"></i> Raport</button>
+                            <button onclick="cetakRaport('${s.id}', '${filterMonth}')" class="bg-teal-600 hover:bg-teal-700 text-white px-2 py-1.5 rounded text-xs transition w-full shadow-sm mb-1"><i class="fas fa-file-alt mr-1"></i> Raport</button>
                             <button onclick="cetakSyahadahGlobal('${s.id}', '${filterMonth}')" class="bg-emerald-600 hover:bg-emerald-700 text-white px-2 py-1.5 rounded text-xs transition w-full shadow-sm"><i class="fas fa-certificate mr-1"></i> Syahadah Global</button>
                         </div>
                     </td>
@@ -2253,7 +2327,6 @@
             captureElement('template-raport', `Raport_${santri.nama.replace(/\s+/g, '_')}_${monthStr}.png`);
         }
 
-
         // --- 11. CLOUD SYNC & BACKUP ---
         function downloadBackup() {
             const data = {
@@ -2288,30 +2361,31 @@
                         saveData(DB_KEY.HAFALAN, data.hafalan);
                         if(data.tahsin) saveData(DB_KEY.TAHSIN, data.tahsin);
                         
-                        alert("Data berhasil di-restore! Aplikasi akan dimuat ulang.");
-                        location.reload();
+                        showToast("✅ Data berhasil di-restore! Aplikasi akan dimuat ulang.");
+                        setTimeout(() => location.reload(), 1500);
                     } else {
-                        alert("Format file JSON tidak valid.");
+                        showToast("❌ Format file JSON tidak valid.");
                     }
                 } catch(err) {
-                    alert("Error membaca file.");
+                    showToast("❌ Error membaca file.");
                 }
             };
             reader.readAsText(file);
         }
 
         function resetData() {
-            if(confirm("PERINGATAN! Ini akan menghapus SELURUH DATA. Lanjutkan?")) {
-                if(confirm("Apakah Anda benar-benar yakin?")) {
+            showCustomConfirm("PERINGATAN! Ini akan menghapus SELURUH DATA. Lanjutkan?", () => {
+                showCustomConfirm("Apakah Anda benar-benar yakin data ini akan dihapus secara permanen?", () => {
                     localStorage.clear();
-                    location.reload();
-                }
-            }
+                    showToast("✅ Seluruh data berhasil dihapus. Memuat ulang...");
+                    setTimeout(() => location.reload(), 1500);
+                });
+            });
         }
 
         async function syncData(mode) {
             const settings = getSettings();
-            if(!settings.gas) return alert('URL Google Apps Script belum diisi di Pengaturan.');
+            if(!settings.gas) return showToast('⚠️ URL Google Apps Script belum diisi di Pengaturan!');
 
             showLoading(true);
             try {
@@ -2334,7 +2408,7 @@
                     
                     const result = await response.json();
                     if(result.status === 'success') {
-                        alert('Data berhasil di-Push (Tersimpan ke Google Sheets).');
+                        showToast('✅ Data berhasil di-Push ke Google Sheets.');
                     } else {
                         throw new Error(result.message);
                     }
@@ -2349,15 +2423,15 @@
                         saveData(DB_KEY.HAFALAN, data.hafalan);
                         if(data.tahsin) saveData(DB_KEY.TAHSIN, data.tahsin);
                         
-                        alert('Data berhasil di-Pull dari Google Sheets. Memuat ulang...');
-                        location.reload();
+                        showToast('✅ Data berhasil di-Pull dari Google Sheets. Memuat ulang...');
+                        setTimeout(() => location.reload(), 1500);
                     } else {
                         throw new Error("Data tidak valid");
                     }
                 }
             } catch(e) {
                 console.error(e);
-                alert('Gagal sinkronisasi. Pastikan URL GAS benar dan sudah di-Deploy dengan akses "Anyone".');
+                showToast('❌ Gagal sinkronisasi. Cek URL GAS dan koneksi internet.');
             } finally {
                 showLoading(false);
             }
