@@ -1671,7 +1671,7 @@
                 phone = '62' + phone.substring(1);
             }
 
-            const msg = `Assalamualaikum.\n\nInfo Kehadiran SIPONTREN:\nNama: *${santri.nama}*\nStatus: *${absensi.status}*\nSesi: ${jadwal ? jadwal.nama : 'Unknown'}\nWaktu: ${absensi.tanggal} ${absensi.waktu}\n\nTerima kasih.`;
+            const msg = `Assalamualaikum.\n\nInfo Kehadiran PESANTREN:\nNama: *${santri.nama}*\nStatus: *${absensi.status}*\nSesi: ${jadwal ? jadwal.nama : 'Unknown'}\nWaktu: ${absensi.tanggal} ${absensi.waktu}\n\nرَبِّ هَبْ لِي مِنَ الصَّالِحِينَ.`;
             
             // Redirect ke link wa.me yang akan otomatis membuka WhatsApp/WhatsApp Web
             const waLink = `https://wa.me/${phone}?text=${encodeURIComponent(msg)}`;
