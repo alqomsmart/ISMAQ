@@ -139,6 +139,9 @@
             <a href="#" onclick="switchTab('santri')" id="nav-santri" class="nav-item flex items-center gap-3 px-6 py-3 text-sm font-medium">
                 <i class="fas fa-users w-5 text-center"></i> Data Santri
             </a>
+            <a href="#" onclick="switchTab('asatidz')" id="nav-asatidz" class="nav-item flex items-center gap-3 px-6 py-3 text-sm font-medium">
+                <i class="fas fa-chalkboard-teacher w-5 text-center"></i> Data Asatidz
+            </a>
             <a href="#" onclick="switchTab('jadwal')" id="nav-jadwal" class="nav-item flex items-center gap-3 px-6 py-3 text-sm font-medium">
                 <i class="fas fa-calendar-alt w-5 text-center"></i> Jadwal Kegiatan
             </a>
@@ -160,7 +163,7 @@
         </nav>
 
         <div class="p-4 border-t border-teal-600/50 text-xs text-teal-200 text-center">
-            v1.8 &copy; 2026 SIPONTREN
+            v2.0 &copy; 2026 SIPONTREN
         </div>
     </aside>
 
@@ -282,6 +285,38 @@
                             </thead>
                             <tbody id="table-santri" class="text-sm divide-y divide-gray-100">
                                 <!-- Data Santri -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 2B. DATA ASATIDZ -->
+            <section id="tab-asatidz" class="tab-content">
+                <div class="glass-card rounded-xl overflow-hidden flex flex-col bg-white">
+                    <div class="p-4 border-b flex flex-col sm:flex-row justify-between items-center gap-4">
+                        <div class="relative w-full sm:w-64">
+                            <i class="fas fa-search absolute left-3 top-3 text-gray-400"></i>
+                            <input type="text" id="search-asatidz" onkeyup="renderAsatidzTable()" placeholder="Cari Nama / ID Asatidz..." class="pl-10 pr-4 py-2 w-full border rounded-lg focus:ring-teal-500 focus:border-teal-500 outline-none text-sm">
+                        </div>
+                        <button onclick="openModal('modal-asatidz')" class="w-full sm:w-auto bg-teal-600 hover:bg-teal-700 text-white px-4 py-2 rounded-lg font-medium text-sm transition flex items-center justify-center gap-2">
+                            <i class="fas fa-plus"></i> Tambah Asatidz
+                        </button>
+                    </div>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left border-collapse">
+                            <thead>
+                                <tr class="bg-gray-50 text-gray-500 text-sm border-b">
+                                    <th class="p-4 font-medium">ID Ustadz</th>
+                                    <th class="p-4 font-medium">Nama Lengkap</th>
+                                    <th class="p-4 font-medium">L/P</th>
+                                    <th class="p-4 font-medium">Bidang/Jabatan</th>
+                                    <th class="p-4 font-medium">No. WA</th>
+                                    <th class="p-4 font-medium text-center">Aksi</th>
+                                </tr>
+                            </thead>
+                            <tbody id="table-asatidz" class="text-sm divide-y divide-gray-100">
+                                <!-- Data Asatidz -->
                             </tbody>
                         </table>
                     </div>
@@ -622,6 +657,48 @@
                 </div>
                 <div class="flex justify-end gap-2 pt-2 border-t">
                     <button type="button" onclick="closeModal('modal-santri')" class="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200">Batal</button>
+                    <button type="submit" class="px-4 py-2 bg-teal-600 text-white rounded-lg hover:bg-teal-700">Simpan</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal Tambah/Edit Asatidz -->
+    <div id="modal-asatidz" class="fixed inset-0 bg-black bg-opacity-50 hidden z-50 flex items-center justify-center p-4">
+        <div class="bg-white rounded-xl shadow-xl w-full max-w-md overflow-hidden animate-fade-in-up">
+            <div class="bg-teal-600 px-4 py-3 flex justify-between items-center text-white">
+                <h3 id="modal-asatidz-title" class="font-bold">Tambah Data Asatidz</h3>
+                <button onclick="closeModal('modal-asatidz')" class="hover:text-gray-200"><i class="fas fa-times"></i></button>
+            </div>
+            <form id="form-asatidz" onsubmit="saveAsatidz(event)" class="p-5 space-y-4 text-sm">
+                <input type="hidden" id="asatidz-id-real">
+                <div>
+                    <label class="block font-medium text-gray-700 mb-1">ID Ustadz</label>
+                    <input type="text" id="asatidz-id" readonly class="w-full border p-2 rounded-lg bg-gray-100 outline-none text-gray-500 font-mono">
+                </div>
+                <div>
+                    <label class="block font-medium text-gray-700 mb-1">Nama Lengkap</label>
+                    <input type="text" id="asatidz-nama" required class="w-full border p-2 rounded-lg focus:ring-teal-500 outline-none">
+                </div>
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block font-medium text-gray-700 mb-1">Jenis Kelamin</label>
+                        <select id="asatidz-gender" required class="w-full border p-2 rounded-lg focus:ring-teal-500 outline-none">
+                            <option value="L">Laki-laki (L)</option>
+                            <option value="P">Perempuan (P)</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block font-medium text-gray-700 mb-1">Bidang/Jabatan</label>
+                        <input type="text" id="asatidz-jabatan" placeholder="Cth: Pengajar Tahfidz" required class="w-full border p-2 rounded-lg focus:ring-teal-500 outline-none">
+                    </div>
+                </div>
+                <div>
+                    <label class="block font-medium text-gray-700 mb-1">No. WhatsApp</label>
+                    <input type="text" id="asatidz-wa" placeholder="08xxxxxxxxxx" required class="w-full border p-2 rounded-lg focus:ring-teal-500 outline-none">
+                </div>
+                <div class="flex justify-end gap-2 pt-2 border-t">
+                    <button type="button" onclick="closeModal('modal-asatidz')" class="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200">Batal</button>
                     <button type="submit" class="px-4 py-2 bg-teal-600 text-white rounded-lg hover:bg-teal-700">Simpan</button>
                 </div>
             </form>
@@ -1052,6 +1129,7 @@
         const DB_KEY = {
             SETTINGS: 'sipontren_settings',
             SANTRI: 'sipontren_santri',
+            ASATIDZ: 'sipontren_asatidz',
             JADWAL: 'sipontren_jadwal',
             ABSENSI: 'sipontren_absensi',
             HAFALAN: 'sipontren_hafalan',
@@ -1078,6 +1156,10 @@
         let scanDebounceTimer = null;
         let pendingConfirmCallback = null;
 
+        // --- URL GOOGLE APPS SCRIPT BAWAAN ---
+        // Silakan ganti teks di bawah ini dengan URL Web App GAS asli milik Anda
+        const DEFAULT_GAS_URL = "https://script.google.com/macros/s/AKfycbxbPwRBPp6rn2IzoKyhOxjkw73j5pyOw2q_Gf2xdB1p5w1BuYuwb0rGlpW2UFtVIHuRlA/exec";
+
         function getData(key) {
             const data = localStorage.getItem(key);
             return data ? JSON.parse(data) : [];
@@ -1085,7 +1167,14 @@
 
         function getSettings() {
             const data = localStorage.getItem(DB_KEY.SETTINGS);
-            return data ? JSON.parse(data) : { nama: 'Santri Mujahid Al Qomariah', logo: '', gas: '' };
+            let settings = data ? JSON.parse(data) : { nama: 'Santri Mujahid Al Qomariah', logo: '', gas: '' };
+            
+            // Logika Pintar: Jika URL GAS di perangkat baru masih kosong, otomatis gunakan URL bawaan
+            if (!settings.gas || settings.gas.trim() === '') {
+                settings.gas = DEFAULT_GAS_URL;
+            }
+            
+            return settings;
         }
 
         function saveData(key, data) {
@@ -1131,6 +1220,7 @@
             applySettings();
             renderDashboard();
             renderSantriTable();
+            renderAsatidzTable();
             renderJadwalTable();
             populateDropdowns();
             renderAbsensiHistory();
@@ -1159,7 +1249,7 @@
             document.getElementById(`nav-${tabId}`).classList.add('active');
             
             const titles = {
-                'dashboard': 'Dashboard', 'santri': 'Data Santri', 'jadwal': 'Jadwal Kegiatan',
+                'dashboard': 'Dashboard', 'santri': 'Data Santri', 'asatidz': 'Data Asatidz', 'jadwal': 'Jadwal Kegiatan',
                 'absensi': 'Scan Absensi', 'hafalan': 'Setor Hafalan', 'tahsin': 'Penilaian Tahsin', 'raport': 'Raport & Laporan', 'pengaturan': 'Pengaturan Sistem'
             };
             document.getElementById('page-title').textContent = titles[tabId];
@@ -1182,6 +1272,7 @@
             pendingConfirmCallback = callback;
         }
 
+        // --- STREAMING_CHUNK:Configuring system settings and dashboard logic... ---
         // --- 3. PENGATURAN MODULE ---
         function applySettings() {
             const settings = getSettings();
@@ -1243,6 +1334,7 @@
             document.getElementById('stat-hafalan').textContent = hafalanToday;
         }
 
+        // --- STREAMING_CHUNK:Building Santri and Asatidz specific logic... ---
         // --- 5. DATA SANTRI MODULE ---
         function renderSantriTable() {
             const santris = getData(DB_KEY.SANTRI);
@@ -1346,6 +1438,105 @@
             });
         }
 
+        // --- 5B. DATA ASATIDZ MODULE ---
+        function renderAsatidzTable() {
+            const asatidz = getData(DB_KEY.ASATIDZ);
+            const query = document.getElementById('search-asatidz').value.toLowerCase();
+            const tbody = document.getElementById('table-asatidz');
+            tbody.innerHTML = '';
+
+            const filtered = asatidz.filter(a => a.nama.toLowerCase().includes(query) || a.id.toLowerCase().includes(query));
+
+            if (filtered.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="6" class="p-4 text-center text-gray-500">Tidak ada data Asatidz.</td></tr>`;
+                return;
+            }
+
+            filtered.forEach(a => {
+                const tr = document.createElement('tr');
+                tr.className = 'hover:bg-gray-50 border-b transition';
+                tr.innerHTML = `
+                    <td class="p-4 font-mono text-teal-600">${a.id}</td>
+                    <td class="p-4 font-medium text-gray-800">${a.nama}</td>
+                    <td class="p-4">${a.gender}</td>
+                    <td class="p-4"><span class="bg-gray-100 text-gray-600 px-2 py-1 rounded text-xs">${a.jabatan}</span></td>
+                    <td class="p-4">${a.wa}</td>
+                    <td class="p-4 text-center space-x-2">
+                        <button onclick="editAsatidz('${a.id}')" class="text-blue-500 hover:text-blue-700" title="Edit"><i class="fas fa-edit"></i></button>
+                        <button onclick="deleteAsatidz('${a.id}')" class="text-red-500 hover:text-red-700" title="Hapus"><i class="fas fa-trash"></i></button>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        function saveAsatidz(e) {
+            e.preventDefault();
+            const asatidz = getData(DB_KEY.ASATIDZ);
+            const isEdit = document.getElementById('asatidz-id-real').value;
+            
+            const newAsatidz = {
+                id: isEdit ? isEdit : generateId('UST', asatidz),
+                nama: document.getElementById('asatidz-nama').value,
+                gender: document.getElementById('asatidz-gender').value,
+                jabatan: document.getElementById('asatidz-jabatan').value,
+                wa: document.getElementById('asatidz-wa').value
+            };
+
+            if (isEdit) {
+                const index = asatidz.findIndex(a => a.id === isEdit);
+                asatidz[index] = newAsatidz;
+            } else {
+                asatidz.push(newAsatidz);
+            }
+
+            saveData(DB_KEY.ASATIDZ, asatidz);
+            closeModal('modal-asatidz');
+            renderAsatidzTable();
+            document.getElementById('form-asatidz').reset();
+            showToast('✅ Data Asatidz tersimpan!');
+        }
+
+        function editAsatidz(id) {
+            const asatidz = getData(DB_KEY.ASATIDZ).find(a => a.id === id);
+            if(!asatidz) return;
+            
+            document.getElementById('modal-asatidz-title').textContent = 'Edit Data Asatidz';
+            document.getElementById('asatidz-id-real').value = asatidz.id;
+            document.getElementById('asatidz-id').value = asatidz.id;
+            document.getElementById('asatidz-nama').value = asatidz.nama;
+            document.getElementById('asatidz-gender').value = asatidz.gender;
+            document.getElementById('asatidz-jabatan').value = asatidz.jabatan;
+            document.getElementById('asatidz-wa').value = asatidz.wa;
+            openModal('modal-asatidz');
+        }
+
+        function deleteAsatidz(id) {
+            showCustomConfirm('Yakin ingin menghapus asatidz ini?', () => {
+                let asatidz = getData(DB_KEY.ASATIDZ);
+                asatidz = asatidz.filter(a => a.id !== id);
+                saveData(DB_KEY.ASATIDZ, asatidz);
+                renderAsatidzTable();
+                showToast('✅ Asatidz berhasil dihapus.');
+            });
+        }
+        
+        // Setup listeners for adding new
+        document.querySelector('#modal-asatidz button[onclick="closeModal(\'modal-asatidz\')"]').addEventListener('click', () => {
+            document.getElementById('form-asatidz').reset();
+            document.getElementById('asatidz-id-real').value = "";
+            document.getElementById('modal-asatidz-title').textContent = 'Tambah Data Asatidz';
+            const asatidz = getData(DB_KEY.ASATIDZ);
+            document.getElementById('asatidz-id').value = generateId('UST', asatidz);
+        });
+        
+        document.querySelector('button[onclick="openModal(\'modal-asatidz\')"]').addEventListener('click', () => {
+             if(!document.getElementById('asatidz-id-real').value) {
+                document.getElementById('asatidz-id').value = generateId('UST', getData(DB_KEY.ASATIDZ));
+             }
+        });
+
+        // --- STREAMING_CHUNK:Configuring Jadwal and Dropdowns... ---
         // --- 6. JADWAL MODULE ---
         function renderJadwalTable() {
             const jadwals = getData(DB_KEY.JADWAL).sort((a,b) => a.waktu.localeCompare(b.waktu));
@@ -1434,6 +1625,7 @@
             });
         }
 
+        // --- STREAMING_CHUNK:Setting up QR Code and Manual Absensi... ---
         // --- 7. ABSENSI & QR SCAN MODULE ---
         function setAbsensiMode(mode) {
             const btnScan = document.getElementById('btn-mode-scan');
@@ -1659,7 +1851,7 @@
             const jadwal = getData(DB_KEY.JADWAL).find(j => j.id === absensi.jadwalId);
 
             if(!santri || !santri.wa) {
-                return showToast('⚠️ Nomor WhatsApp santri / orang tua tidak tersedia!');
+                return alert('Nomor WhatsApp santri / orang tua tidak tersedia di data santri!');
             }
 
             // Jika Anda ingin pesan dikirim KHUSUS ke nomor Anda sendiri (bukan ortu santri), 
@@ -1671,7 +1863,7 @@
                 phone = '62' + phone.substring(1);
             }
 
-            const msg = `Assalamualaikum.\n\nInfo Kehadiran PESANTREN:\nNama: *${santri.nama}*\nStatus: *${absensi.status}*\nSesi: ${jadwal ? jadwal.nama : 'Unknown'}\nWaktu: ${absensi.tanggal} ${absensi.waktu}\n\nرَبِّ هَبْ لِي مِنَ الصَّالِحِينَ.`;
+            const msg = `Assalamualaikum.\n\nInfo Kehadiran SIPONTREN:\nNama: *${santri.nama}*\nStatus: *${absensi.status}*\nSesi: ${jadwal ? jadwal.nama : 'Unknown'}\nWaktu: ${absensi.tanggal} ${absensi.waktu}\n\nTerima kasih.`;
             
             // Redirect ke link wa.me yang akan otomatis membuka WhatsApp/WhatsApp Web
             const waLink = `https://wa.me/${phone}?text=${encodeURIComponent(msg)}`;
@@ -1688,8 +1880,8 @@
             const tbody = document.getElementById('table-absensi');
             tbody.innerHTML = '';
 
-            // Only show today's history, max 20
-            const todayAbsen = absensis.filter(a => a.tanggal === today).slice(0, 20);
+            // Tampilkan SELURUH riwayat absensi hari ini (menghapus batasan maksimal 20 data)
+            const todayAbsen = absensis.filter(a => a.tanggal === today);
 
             if(todayAbsen.length === 0) {
                 tbody.innerHTML = `<tr><td colspan="5" class="p-4 text-center text-gray-500">Belum ada absensi hari ini.</td></tr>`;
@@ -1721,6 +1913,7 @@
             });
         }
 
+        // --- STREAMING_CHUNK:Implementing Hafalan functions and logic... ---
         // --- 8. SETOR HAFALAN MODULE ---
         function toggleHafalanFields() {
             const kat = document.getElementById('hafalan-kategori').value;
@@ -1868,6 +2061,7 @@
             openModal('modal-leaderboard');
         }
 
+        // --- STREAMING_CHUNK:Integrating Tahsin Evaluation functions... ---
         // --- 8B. PENILAIAN TAHSIN MODULE ---
         function calculateTahsin() {
             const m = parseFloat(document.getElementById('th-makhraj').value) || 0;
@@ -2076,6 +2270,7 @@
             showToast("✅ Data Tahsin berhasil diekspor ke Excel (CSV)");
         }
 
+        // --- STREAMING_CHUNK:Finalizing rendering logic and HTML2Canvas export utilities... ---
         // --- 9. HTML2CANVAS EXPORT (ID Card, Syahadah, Raport) ---
         
         async function captureElement(elementId, downloadName) {
@@ -2327,11 +2522,14 @@
             captureElement('template-raport', `Raport_${santri.nama.replace(/\s+/g, '_')}_${monthStr}.png`);
         }
 
+
+        // --- STREAMING_CHUNK:Finalizing local storage sync and backup systems... ---
         // --- 11. CLOUD SYNC & BACKUP ---
         function downloadBackup() {
             const data = {
                 settings: getSettings(),
                 santri: getData(DB_KEY.SANTRI),
+                asatidz: getData(DB_KEY.ASATIDZ),
                 jadwal: getData(DB_KEY.JADWAL),
                 absensi: getData(DB_KEY.ABSENSI),
                 hafalan: getData(DB_KEY.HAFALAN),
@@ -2356,6 +2554,7 @@
                     if(data.settings && data.santri) {
                         saveData(DB_KEY.SETTINGS, data.settings);
                         saveData(DB_KEY.SANTRI, data.santri);
+                        if(data.asatidz) saveData(DB_KEY.ASATIDZ, data.asatidz);
                         saveData(DB_KEY.JADWAL, data.jadwal);
                         saveData(DB_KEY.ABSENSI, data.absensi);
                         saveData(DB_KEY.HAFALAN, data.hafalan);
@@ -2385,7 +2584,9 @@
 
         async function syncData(mode) {
             const settings = getSettings();
-            if(!settings.gas) return showToast('⚠️ URL Google Apps Script belum diisi di Pengaturan!');
+            if(!settings.gas || settings.gas === DEFAULT_GAS_URL) {
+                return showToast('⚠️ Gunakan URL Google Apps Script milik Anda sendiri untuk sinkronisasi!');
+            }
 
             showLoading(true);
             try {
@@ -2394,6 +2595,7 @@
                         action: 'push',
                         data: {
                             santri: getData(DB_KEY.SANTRI),
+                            asatidz: getData(DB_KEY.ASATIDZ),
                             jadwal: getData(DB_KEY.JADWAL),
                             absensi: getData(DB_KEY.ABSENSI),
                             hafalan: getData(DB_KEY.HAFALAN),
@@ -2418,6 +2620,7 @@
                     
                     if(data && data.santri) {
                         saveData(DB_KEY.SANTRI, data.santri);
+                        if(data.asatidz) saveData(DB_KEY.ASATIDZ, data.asatidz);
                         saveData(DB_KEY.JADWAL, data.jadwal);
                         saveData(DB_KEY.ABSENSI, data.absensi);
                         saveData(DB_KEY.HAFALAN, data.hafalan);
@@ -2431,7 +2634,7 @@
                 }
             } catch(e) {
                 console.error(e);
-                showToast('❌ Gagal sinkronisasi. Cek URL GAS dan koneksi internet.');
+                showToast('❌ Gagal sinkronisasi. Cek URL GAS dan koneksi internet Anda.');
             } finally {
                 showLoading(false);
             }
