@@ -1154,11 +1154,10 @@
         let html5Qrcode = null;
         let lastScannedId = "";
         let scanDebounceTimer = null;
-        let pendingConfirmCallback = null;
 
         // --- URL GOOGLE APPS SCRIPT BAWAAN ---
-        // Silakan ganti teks di bawah ini dengan URL Web App GAS asli milik Anda
-        const DEFAULT_GAS_URL = "https://script.google.com/macros/s/AKfycbxbPwRBPp6rn2IzoKyhOxjkw73j5pyOw2q_Gf2xdB1p5w1BuYuwb0rGlpW2UFtVIHuRlA/exec";
+        // Ganti teks di bawah ini dengan URL Web App BARU yang baru saja Anda dapatkan dari hasil Deploy Baru
+        const DEFAULT_GAS_URL = "https://script.google.com/macros/s/AKfycbw1aJEODru66_X1Icvt2OrOGJ8tXFPkyC3X5Dopps6bUtdJNLZoc9A0lIQEgRfxxYMRdw/exec";
 
         function getData(key) {
             const data = localStorage.getItem(key);
