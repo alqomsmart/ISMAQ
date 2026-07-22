@@ -19,7 +19,8 @@
                     colors: {
                         emerald: { 50: '#ecfdf5', 100: '#d1fae5', 500: '#10b981', 600: '#059669', 700: '#047857', 800: '#065f46', 900: '#064e3b' },
                         teal: { 50: '#f0fdfa', 500: '#14b8a6', 600: '#0d9488', 700: '#0f766e', 800: '#115e59', 900: '#134e4a' },
-                        indigo: { 50: '#eef2ff', 100: '#e0e7ff', 500: '#6366f1', 600: '#4f46e5', 700: '#4338ca', 800: '#3730a3', 900: '#312e81' }
+                        indigo: { 50: '#eef2ff', 100: '#e0e7ff', 500: '#6366f1', 600: '#4f46e5', 700: '#4338ca', 800: '#3730a3', 900: '#312e81' },
+                        blue: { 50: '#eff6ff', 100: '#dbeafe', 500: '#3b82f6', 600: '#2563eb', 700: '#1d4ed8', 800: '#1e40af' }
                     }
                 }
             }
@@ -163,7 +164,7 @@
         </nav>
 
         <div class="p-4 border-t border-teal-600/50 text-xs text-teal-200 text-center">
-            v2.0 &copy; 2026 SIPONTREN
+            v2.1 &copy; 2026 SIPONTREN
         </div>
     </aside>
 
@@ -279,6 +280,7 @@
                                     <th class="p-4 font-medium">Nama Lengkap</th>
                                     <th class="p-4 font-medium">L/P</th>
                                     <th class="p-4 font-medium">Kelas</th>
+                                    <th class="p-4 font-medium">Target</th>
                                     <th class="p-4 font-medium">No. WA Ortu</th>
                                     <th class="p-4 font-medium text-center">Aksi</th>
                                 </tr>
@@ -435,10 +437,15 @@
 
             <!-- 5. SETOR HAFALAN -->
             <section id="tab-hafalan" class="tab-content">
-                <div class="flex flex-col md:flex-row justify-between items-center mb-6 gap-4">
-                    <button onclick="openModal('modal-hafalan')" class="w-full md:w-auto bg-emerald-600 hover:bg-emerald-700 text-white px-5 py-2.5 rounded-lg font-medium transition flex items-center justify-center gap-2 shadow-lg shadow-emerald-200">
-                        <i class="fas fa-plus-circle"></i> Input Setoran Baru
-                    </button>
+                <div class="flex flex-col md:flex-row gap-3 items-center justify-between mb-6">
+                    <div class="flex gap-2 w-full md:w-auto">
+                        <button onclick="openModal('modal-hafalan')" class="flex-1 md:w-auto bg-emerald-600 hover:bg-emerald-700 text-white px-5 py-2.5 rounded-lg font-medium transition flex items-center justify-center gap-2 shadow-lg shadow-emerald-200">
+                            <i class="fas fa-plus-circle"></i> Setor Baru
+                        </button>
+                        <button onclick="openProgressModal()" class="flex-1 md:w-auto bg-blue-500 hover:bg-blue-600 text-white px-5 py-2.5 rounded-lg font-medium transition flex items-center justify-center gap-2 shadow-lg shadow-blue-200">
+                            <i class="fas fa-chart-line"></i> Pantau Progress
+                        </button>
+                    </div>
                     <!-- Leaderboard Button -->
                     <button onclick="openLeaderboard()" class="w-full md:w-auto bg-amber-500 hover:bg-amber-600 text-white px-5 py-2.5 rounded-lg font-medium transition flex items-center justify-center gap-2 shadow-lg shadow-amber-200">
                         <i class="fas fa-trophy"></i> Top Tahfidz
@@ -650,10 +657,15 @@
                         </select>
                     </div>
                 </div>
-                <div>
-                    <label class="block font-medium text-gray-700 mb-1">No. WhatsApp Orang Tua</label>
-                    <input type="text" id="santri-wa" placeholder="08xxxxxxxxxx" required class="w-full border p-2 rounded-lg focus:ring-teal-500 outline-none">
-                    <p class="text-xs text-gray-500 mt-1">Gunakan format 08... atau 628...</p>
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block font-medium text-gray-700 mb-1">No. WA Orang Tua</label>
+                        <input type="text" id="santri-wa" placeholder="08xxxxxxxxxx" required class="w-full border p-2 rounded-lg focus:ring-teal-500 outline-none">
+                    </div>
+                    <div>
+                        <label class="block font-medium text-gray-700 mb-1">Target Hafalan (Juz)</label>
+                        <input type="number" id="santri-target" min="1" max="30" value="30" required class="w-full border p-2 rounded-lg focus:ring-teal-500 outline-none">
+                    </div>
                 </div>
                 <div class="flex justify-end gap-2 pt-2 border-t">
                     <button type="button" onclick="closeModal('modal-santri')" class="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200">Batal</button>
@@ -1121,6 +1133,19 @@
             </div>
         </div>
     </div>
+    
+    <!-- Modal Progress Hafalan -->
+    <div id="modal-progress" class="fixed inset-0 bg-black bg-opacity-50 hidden z-50 flex items-center justify-center p-4">
+        <div class="bg-white rounded-xl shadow-xl w-full max-w-lg overflow-hidden">
+            <div class="bg-blue-600 px-4 py-3 flex justify-between items-center text-white">
+                <h3 class="font-bold flex items-center gap-2"><i class="fas fa-chart-pie"></i> Progress Hafalan Santri</h3>
+                <button onclick="closeModal('modal-progress')" class="hover:text-blue-100"><i class="fas fa-times"></i></button>
+            </div>
+            <div class="p-4 bg-gray-50 max-h-[60vh] overflow-y-auto" id="list-progress">
+                <!-- Progress Data Injected Here -->
+            </div>
+        </div>
+    </div>
 
 
     <!-- ================== SCRIPT LOGIKA APLIKASI ================== -->
@@ -1154,10 +1179,9 @@
         let html5Qrcode = null;
         let lastScannedId = "";
         let scanDebounceTimer = null;
+        let pendingConfirmCallback = null; // Handler for custom confirm modal
 
-        // --- URL GOOGLE APPS SCRIPT BAWAAN ---
-        // Ganti teks di bawah ini dengan URL Web App BARU yang baru saja Anda dapatkan dari hasil Deploy Baru
-        const DEFAULT_GAS_URL = "MASUKKAN_URL_BARU_ANDA_DISINI";
+        const DEFAULT_GAS_URL = "https://script.google.com/macros/s/AKfycbyqrUM-USr-pdPhkBQVVB9-kbZb-0fMekh_PRfwekF8iIE9d0UespFsLQOhMnsR8FiHNQ/exec";
 
         function getData(key) {
             const data = localStorage.getItem(key);
@@ -1167,12 +1191,7 @@
         function getSettings() {
             const data = localStorage.getItem(DB_KEY.SETTINGS);
             let settings = data ? JSON.parse(data) : { nama: 'Santri Mujahid Al Qomariah', logo: '', gas: '' };
-            
-            // Logika Pintar: Jika URL GAS di perangkat baru masih kosong, otomatis gunakan URL bawaan
-            if (!settings.gas || settings.gas.trim() === '') {
-                settings.gas = DEFAULT_GAS_URL;
-            }
-            
+            if (!settings.gas || settings.gas.trim() === '') settings.gas = DEFAULT_GAS_URL;
             return settings;
         }
 
@@ -1226,7 +1245,6 @@
             renderHafalanTable();
             renderTahsinTable();
             
-            // Set default date display for absensi
             const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
             document.getElementById('absensi-date-display').textContent = new Date().toLocaleDateString('id-ID', options);
         }
@@ -1236,10 +1254,7 @@
         }
 
         function switchTab(tabId) {
-            // Stop scanner if leaving absensi
-            if (tabId !== 'absensi') {
-                stopScanner();
-            }
+            if (tabId !== 'absensi') stopScanner();
 
             document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
             document.getElementById(`tab-${tabId}`).classList.add('active');
@@ -1257,13 +1272,8 @@
             if(window.innerWidth < 768) document.getElementById('sidebar').classList.add('-translate-x-full');
         }
 
-        function openModal(id) {
-            document.getElementById(id).classList.remove('hidden');
-        }
-
-        function closeModal(id) {
-            document.getElementById(id).classList.add('hidden');
-        }
+        function openModal(id) { document.getElementById(id).classList.remove('hidden'); }
+        function closeModal(id) { document.getElementById(id).classList.add('hidden'); }
         
         function showCustomConfirm(message, callback) {
             document.getElementById('confirm-message').textContent = message;
@@ -1271,7 +1281,6 @@
             pendingConfirmCallback = callback;
         }
 
-        // --- STREAMING_CHUNK:Configuring system settings and dashboard logic... ---
         // --- 3. PENGATURAN MODULE ---
         function applySettings() {
             const settings = getSettings();
@@ -1286,7 +1295,6 @@
                 document.getElementById('logo-icon').classList.remove('hidden');
             }
 
-            // Fill form
             document.getElementById('set-nama').value = settings.nama;
             document.getElementById('set-logo').value = settings.logo || '';
             document.getElementById('set-gas').value = settings.gas || '';
@@ -1313,7 +1321,6 @@
 
             document.getElementById('stat-santri').textContent = santris.length;
             
-            // Absensi today logic (simplification: assume sesi 1 is first chronologically)
             const jadwals = getData(DB_KEY.JADWAL).sort((a,b) => a.waktu.localeCompare(b.waktu));
             let hadirSesi1 = 0; let hadirSesi2 = 0;
 
@@ -1333,7 +1340,6 @@
             document.getElementById('stat-hafalan').textContent = hafalanToday;
         }
 
-        // --- STREAMING_CHUNK:Building Santri and Asatidz specific logic... ---
         // --- 5. DATA SANTRI MODULE ---
         function renderSantriTable() {
             const santris = getData(DB_KEY.SANTRI);
@@ -1344,7 +1350,7 @@
             const filtered = santris.filter(s => s.nama.toLowerCase().includes(query) || s.id.toLowerCase().includes(query));
 
             if (filtered.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="6" class="p-4 text-center text-gray-500">Tidak ada data santri.</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="7" class="p-4 text-center text-gray-500">Tidak ada data santri.</td></tr>`;
                 return;
             }
 
@@ -1356,6 +1362,7 @@
                     <td class="p-4 font-medium text-gray-800">${s.nama}</td>
                     <td class="p-4">${s.gender}</td>
                     <td class="p-4"><span class="bg-gray-100 text-gray-600 px-2 py-1 rounded text-xs">${s.kelas}</span></td>
+                    <td class="p-4 font-bold text-blue-600">${s.target || 30} Juz</td>
                     <td class="p-4">${s.wa}</td>
                     <td class="p-4 text-center space-x-2">
                         <button onclick="editSantri('${s.id}')" class="text-blue-500 hover:text-blue-700" title="Edit"><i class="fas fa-edit"></i></button>
@@ -1377,7 +1384,8 @@
                 nama: document.getElementById('santri-nama').value,
                 gender: document.getElementById('santri-gender').value,
                 kelas: document.getElementById('santri-kelas').value,
-                wa: document.getElementById('santri-wa').value
+                wa: document.getElementById('santri-wa').value,
+                target: document.getElementById('santri-target').value || '30'
             };
 
             if (isEdit) {
@@ -1393,6 +1401,7 @@
             renderDashboard();
             populateDropdowns();
             document.getElementById('form-santri').reset();
+            document.getElementById('santri-target').value = '30';
             showToast('✅ Data Santri tersimpan!');
         }
 
@@ -1407,6 +1416,7 @@
             document.getElementById('santri-gender').value = santri.gender;
             document.getElementById('santri-kelas').value = santri.kelas;
             document.getElementById('santri-wa').value = santri.wa;
+            document.getElementById('santri-target').value = santri.target || '30';
             openModal('modal-santri');
         }
 
@@ -1414,11 +1424,11 @@
             document.getElementById('form-santri').reset();
             document.getElementById('santri-id-real').value = "";
             document.getElementById('modal-santri-title').textContent = 'Tambah Data Santri';
+            document.getElementById('santri-target').value = "30";
             const santris = getData(DB_KEY.SANTRI);
             document.getElementById('santri-id').value = generateId('SMQ', santris);
         });
         
-        // Auto-fill ID on open add modal if not edit
         document.querySelector('button[onclick="openModal(\'modal-santri\')"]').addEventListener('click', () => {
              if(!document.getElementById('santri-id-real').value) {
                 document.getElementById('santri-id').value = generateId('SMQ', getData(DB_KEY.SANTRI));
@@ -1520,7 +1530,6 @@
             });
         }
         
-        // Setup listeners for adding new
         document.querySelector('#modal-asatidz button[onclick="closeModal(\'modal-asatidz\')"]').addEventListener('click', () => {
             document.getElementById('form-asatidz').reset();
             document.getElementById('asatidz-id-real').value = "";
@@ -1535,7 +1544,6 @@
              }
         });
 
-        // --- STREAMING_CHUNK:Configuring Jadwal and Dropdowns... ---
         // --- 6. JADWAL MODULE ---
         function renderJadwalTable() {
             const jadwals = getData(DB_KEY.JADWAL).sort((a,b) => a.waktu.localeCompare(b.waktu));
@@ -1612,7 +1620,6 @@
                 selJadwalAbs.innerHTML += `<option value="${j.id}">${j.waktu} - ${j.nama}</option>`;
             });
 
-            // Populate Dropdown Surat
             const selSurat = document.getElementById('h-q-surat');
             const selSuratSampai = document.getElementById('h-q-surat-sampai');
             selSurat.innerHTML = '<option value="">-- Pilih --</option>';
@@ -1624,7 +1631,6 @@
             });
         }
 
-        // --- STREAMING_CHUNK:Setting up QR Code and Manual Absensi... ---
         // --- 7. ABSENSI & QR SCAN MODULE ---
         function setAbsensiMode(mode) {
             const btnScan = document.getElementById('btn-mode-scan');
@@ -1656,10 +1662,9 @@
                         camSelect.innerHTML += `<option value="${device.id}">${device.label || 'Kamera ' + device.id}</option>`;
                     });
                     
-                    // Otomatis pilih kamera belakang jika ada (untuk HP)
                     let backCam = devices.find(c => c.label.toLowerCase().includes('back') || c.label.toLowerCase().includes('belakang'));
                     if(backCam) camSelect.value = backCam.id;
-                    else camSelect.selectedIndex = 1; // Pilih kamera pertama
+                    else camSelect.selectedIndex = 1;
                 } else {
                     document.getElementById('scan-status').innerHTML = "<span class='text-red-500'>Kamera tidak ditemukan.</span>";
                 }
@@ -1692,7 +1697,7 @@
                 camId,
                 { fps: 10, qrbox: { width: 250, height: 250 } },
                 (decodedText) => { onScanSuccess(decodedText); },
-                (errorMessage) => { /* Abaikan error bacaan buram (frame kosong) */ }
+                (errorMessage) => { }
             ).then(() => {
                 document.getElementById('scan-status').innerHTML = '<span class="text-teal-600"><i class="fas fa-camera"></i> Kamera Aktif - Arahkan QR Code</span>';
                 document.getElementById('qr-reader').classList.replace('border-gray-300', 'border-teal-500');
@@ -1725,29 +1730,25 @@
                 
                 if (type === 'success') {
                     osc.type = 'sine';
-                    osc.frequency.setValueAtTime(880, ctx.currentTime); // Nada tinggi sukses
+                    osc.frequency.setValueAtTime(880, ctx.currentTime);
                     gain.gain.setValueAtTime(0.1, ctx.currentTime);
                     osc.start();
-                    osc.stop(ctx.currentTime + 0.15); // Bunyi cepat
+                    osc.stop(ctx.currentTime + 0.15);
                 } else {
                     osc.type = 'sawtooth';
-                    osc.frequency.setValueAtTime(300, ctx.currentTime); // Nada rendah error
+                    osc.frequency.setValueAtTime(300, ctx.currentTime);
                     gain.gain.setValueAtTime(0.1, ctx.currentTime);
                     osc.start();
-                    osc.stop(ctx.currentTime + 0.4); // Bunyi sedikit lebih lama
+                    osc.stop(ctx.currentTime + 0.4);
                 }
             } catch(e) { console.log("Audio API error", e); }
         }
 
         async function onScanSuccess(decodedText) {
             const now = Date.now();
-            // Jeda 3 detik agar satu QR tidak terabsen berkali-kali dalam 1 waktu
-            if (lastScannedId === decodedText && now - scanDebounceTimer < 3000) {
-                return;
-            }
+            if (lastScannedId === decodedText && now - scanDebounceTimer < 3000) return;
             lastScannedId = decodedText;
             scanDebounceTimer = now;
-            
             await processAbsensi(decodedText, 'Hadir', true);
         }
 
@@ -1786,13 +1787,10 @@
             const time = new Date().toLocaleTimeString('id-ID', { hour12: false });
 
             let absensis = getData(DB_KEY.ABSENSI);
-            
-            // Cek jika sudah absen di sesi yang sama hari ini
             const existingIndex = absensis.findIndex(a => a.tanggal === today && a.jadwalId === jadwalId && a.santriId === santriId);
             
             if(existingIndex !== -1) {
                 if(absensis[existingIndex].status === status) {
-                    // Beri notifikasi jika status yang diklik sama dengan yang sudah ada
                     if(isScan) {
                         playAudioFeedback('error');
                         document.getElementById('scan-status').innerHTML = `<span class="text-yellow-600"><i class="fas fa-info-circle"></i> ${santri.nama} sudah diabsen.</span>`;
@@ -1801,12 +1799,10 @@
                     }
                     return; 
                 } else {
-                    // Update status jika mengklik status yang BERBEDA (misal mengubah Alpa menjadi Sakit)
                     absensis[existingIndex].status = status;
                     absensis[existingIndex].waktu = time;
                 }
             } else {
-                // Jika belum ada data di sesi ini, catat sebagai data baru
                 absensis.unshift({
                     id: 'ABS-' + Date.now(),
                     tanggal: today,
@@ -1821,12 +1817,11 @@
             renderAbsensiHistory();
             renderDashboard();
 
-            // Efek visual sukses
             if(isScan) {
                 playAudioFeedback('success');
                 const qrBox = document.getElementById('qr-reader');
                 qrBox.classList.replace('border-teal-500', 'border-emerald-500');
-                qrBox.style.backgroundColor = 'rgba(16, 185, 129, 0.15)'; // Hijau pudar
+                qrBox.style.backgroundColor = 'rgba(16, 185, 129, 0.15)'; 
                 
                 const stat = document.getElementById('scan-status');
                 stat.innerHTML = `<span class="text-emerald-600 font-bold"><i class="fas fa-check-circle"></i> Berhasil: ${santri.nama}</span>`;
@@ -1837,7 +1832,6 @@
                     if(html5Qrcode && html5Qrcode.isScanning) stat.innerHTML = '<span class="text-teal-600"><i class="fas fa-camera"></i> Kamera Aktif - Arahkan QR Code</span>';
                 }, 1500);
             } else {
-                // Notifikasi sukses untuk manual input
                 showToast(`✅ Status ${santri.nama} tersimpan: ${status}`);
             }
         }
@@ -1850,21 +1844,14 @@
             const jadwal = getData(DB_KEY.JADWAL).find(j => j.id === absensi.jadwalId);
 
             if(!santri || !santri.wa) {
-                return alert('Nomor WhatsApp santri / orang tua tidak tersedia di data santri!');
+                return showToast('❌ Nomor WhatsApp santri tidak tersedia!');
             }
 
-            // Jika Anda ingin pesan dikirim KHUSUS ke nomor Anda sendiri (bukan ortu santri), 
-            // Anda bisa mengganti variabel phone di bawah menjadi: let phone = "628xxxxxxxx"; 
             let phone = santri.wa;
+            if (phone.startsWith('0')) phone = '62' + phone.substring(1);
 
-            // Format nomor telepon agar valid untuk link WA (mengganti 08 menjadi 628)
-            if (phone.startsWith('0')) {
-                phone = '62' + phone.substring(1);
-            }
-
-            const msg = `Assalamualaikum.\n\nInfo Kehadiran SIPONTREN:\nNama: *${santri.nama}*\nStatus: *${absensi.status}*\nSesi: ${jadwal ? jadwal.nama : 'Unknown'}\nWaktu: ${absensi.tanggal} ${absensi.waktu}\n\nTerima kasih.`;
+            const msg = `Assalamualaikum.\n\nInfo Kehadiran PESANTREN:\nNama: *${santri.nama}*\nStatus: *${absensi.status}*\nSesi: ${jadwal ? jadwal.nama : 'Unknown'}\nWaktu: ${absensi.tanggal} ${absensi.waktu}\n\nرَبِّ هَبْ لِي مِنَ الصَّالِحِينَ ...`;
             
-            // Redirect ke link wa.me yang akan otomatis membuka WhatsApp/WhatsApp Web
             const waLink = `https://wa.me/${phone}?text=${encodeURIComponent(msg)}`;
             window.open(waLink, '_blank');
             showToast('Membuka aplikasi WhatsApp...');
@@ -1879,7 +1866,6 @@
             const tbody = document.getElementById('table-absensi');
             tbody.innerHTML = '';
 
-            // Tampilkan SELURUH riwayat absensi hari ini (menghapus batasan maksimal 20 data)
             const todayAbsen = absensis.filter(a => a.tanggal === today);
 
             if(todayAbsen.length === 0) {
@@ -1912,8 +1898,7 @@
             });
         }
 
-        // --- STREAMING_CHUNK:Implementing Hafalan functions and logic... ---
-        // --- 8. SETOR HAFALAN MODULE ---
+        // --- 8. SETOR HAFALAN & PROGRESS MODULE ---
         function toggleHafalanFields() {
             const kat = document.getElementById('hafalan-kategori').value;
             if(kat === 'Quran') {
@@ -1944,12 +1929,11 @@
                     suratStr = `${s} s.d. ${s2}`;
                 }
                 
-                // Logika Pintar untuk Ayat
                 let ayatStr = "";
                 if (a.trim() !== "") {
-                    ayatStr = `, Ayat ${a}`; // Jika diisi: , Ayat 1-10
+                    ayatStr = `, Ayat ${a}`;
                 } else {
-                    ayatStr = ` (Seluruh Ayat)`; // Jika dikosongkan: (Seluruh Ayat)
+                    ayatStr = ` (Seluruh Ayat)`;
                 }
                 
                 dataDetail = `Juz ${j}, Surat ${suratStr}${ayatStr}`;
@@ -1968,8 +1952,7 @@
                 detail: dataDetail,
                 penyimak: document.getElementById('hafalan-penyimak').value,
                 predikat: document.getElementById('hafalan-predikat').value,
-                // store raw data for leaderboard logic (simple length proxy based on string length or numbers if complex)
-                _rawLength: kategori === 'Quran' ? 10 : 5 // Simplified score
+                _rawLength: kategori === 'Quran' ? 10 : 5
             });
 
             saveData(DB_KEY.HAFALAN, hafalans);
@@ -1982,7 +1965,7 @@
         }
 
         function renderHafalanTable() {
-            const hafalans = getData(DB_KEY.HAFALAN).slice(0, 50); // Show last 50
+            const hafalans = getData(DB_KEY.HAFALAN).slice(0, 50);
             const santris = getData(DB_KEY.SANTRI);
             const tbody = document.getElementById('table-hafalan');
             tbody.innerHTML = '';
@@ -2022,18 +2005,16 @@
             const santris = getData(DB_KEY.SANTRI);
             const hafalans = getData(DB_KEY.HAFALAN);
             
-            // Calculate scores
             const scores = {};
             hafalans.forEach(h => {
                 if(!scores[h.santriId]) scores[h.santriId] = 0;
-                scores[h.santriId] += h._rawLength; // Simple summation logic
+                scores[h.santriId] += h._rawLength;
             });
 
-            // Sort
             const sorted = Object.keys(scores)
                 .map(id => ({ id, score: scores[id] }))
                 .sort((a,b) => b.score - a.score)
-                .slice(0, 10); // Top 10
+                .slice(0, 10);
 
             const tbody = document.getElementById('table-leaderboard');
             tbody.innerHTML = '';
@@ -2060,7 +2041,58 @@
             openModal('modal-leaderboard');
         }
 
-        // --- STREAMING_CHUNK:Integrating Tahsin Evaluation functions... ---
+        function openProgressModal() {
+            const santris = getData(DB_KEY.SANTRI);
+            const hafalans = getData(DB_KEY.HAFALAN).filter(h => h.kategori === 'Quran');
+
+            const container = document.getElementById('list-progress');
+            container.innerHTML = '';
+
+            if(santris.length === 0) {
+                container.innerHTML = `<div class="p-4 text-center text-gray-500">Belum ada data santri.</div>`;
+                openModal('modal-progress');
+                return;
+            }
+
+            const progressData = santris.map(santri => {
+                let target = parseInt(santri.target) || 30;
+                
+                let juzSet = new Set();
+                const hafalanSantri = hafalans.filter(h => h.santriId === santri.id);
+                hafalanSantri.forEach(h => {
+                    const match = h.detail.match(/Juz (\d+)/);
+                    if(match) juzSet.add(parseInt(match[1]));
+                });
+                
+                const tercapai = juzSet.size;
+                let persentase = Math.round((tercapai / target) * 100);
+                if(persentase > 100) persentase = 100;
+
+                return { santri, target, tercapai, persentase };
+            }).sort((a, b) => b.persentase - a.persentase);
+
+            progressData.forEach(data => {
+                let colorClass = "bg-blue-500";
+                if(data.persentase >= 100) colorClass = "bg-emerald-500";
+                else if(data.persentase >= 50) colorClass = "bg-teal-500";
+                else if(data.persentase < 20) colorClass = "bg-amber-500";
+
+                container.innerHTML += `
+                    <div class="mb-4 bg-white p-4 rounded-xl border border-gray-200 shadow-sm">
+                        <div class="flex justify-between items-end mb-2">
+                            <span class="text-sm font-bold text-gray-800">${data.santri.nama} <span class="text-xs text-gray-500 font-normal">(${data.santri.kelas})</span></span>
+                            <span class="text-xs font-bold text-gray-600">${data.tercapai} / ${data.target} Juz (${data.persentase}%)</span>
+                        </div>
+                        <div class="w-full bg-gray-200 rounded-full h-2.5 overflow-hidden">
+                            <div class="${colorClass} h-2.5 rounded-full transition-all duration-1000" style="width: ${data.persentase}%"></div>
+                        </div>
+                    </div>
+                `;
+            });
+
+            openModal('modal-progress');
+        }
+
         // --- 8B. PENILAIAN TAHSIN MODULE ---
         function calculateTahsin() {
             const m = parseFloat(document.getElementById('th-makhraj').value) || 0;
@@ -2095,7 +2127,6 @@
             const penguji = document.getElementById('tahsin-penguji').value;
             const catatan = document.getElementById('th-catatan').value;
             
-            // Get Checkboxes
             const rekElements = document.querySelectorAll('.th-rekomendasi:checked');
             let rekomendasi = [];
             rekElements.forEach(el => rekomendasi.push(el.value));
@@ -2181,7 +2212,6 @@
             document.getElementById('ths-print-tanggal').textContent = dateObj.toLocaleDateString('id-ID', { year: 'numeric', month: 'long', day: 'numeric' });
             document.getElementById('ths-print-penguji').textContent = tahsin.penguji;
 
-            // Injeksi Tabel Nilai
             const n = tahsin.nilai;
             document.getElementById('ths-print-n-makhraj').textContent = n.makhraj;
             document.getElementById('ths-print-n-tajwid').textContent = n.tajwid;
@@ -2199,7 +2229,6 @@
             document.getElementById('ths-print-predikat').textContent = tahsin.predikat;
             document.getElementById('ths-print-catatan').textContent = tahsin.catatan || "- Tidak ada catatan khusus -";
 
-            // Injeksi Checkbox Rekomendasi
             const rekContainer = document.getElementById('ths-print-rekomendasi');
             rekContainer.innerHTML = '';
             const allRek = ["Lulus Tahsin Dasar", "Naik ke Jilid Berikutnya", "Siap Mengikuti Program Tahfidz", "Perlu Perbaikan Makhraj", "Perlu Perbaikan Tajwid", "Perlu Latihan Kelancaran"];
@@ -2213,11 +2242,9 @@
             document.getElementById('ths-print-ttd-penguji').textContent = tahsin.penguji;
             document.getElementById('ths-print-ttd-peserta').textContent = santri ? santri.nama : '';
 
-            // Print
             captureElement('template-tahsin', `Penilaian_Tahsin_${santri ? santri.nama.replace(/\s+/g, '_') : 'Santri'}.png`);
         }
 
-        // FUNGSI BARU: EKSPOR TAHSIN KE EXCEL (CSV)
         function exportTahsinToCSV() {
             const tahsins = getData(DB_KEY.TAHSIN);
             const santris = getData(DB_KEY.SANTRI);
@@ -2226,14 +2253,11 @@
                 return showToast("⚠️ Belum ada data penilaian Tahsin untuk diekspor.");
             }
 
-            // Header kolom untuk file Excel/CSV
             let csvString = "Tanggal,ID Santri,Nama Santri,Penguji,Makhraj (25%),Tajwid (30%),Kelancaran (20%),Kefasihan (15%),Adab (10%),Nilai Akhir,Predikat,Catatan,Rekomendasi\n";
 
             tahsins.forEach(t => {
                 const santri = santris.find(s => s.id === t.santriId) || { nama: 'Unknown' };
                 const n = t.nilai;
-                
-                // Fungsi kecil untuk membersihkan koma dan petik dua agar tidak merusak format CSV
                 const escapeCSV = (str) => `"${String(str || '').replace(/"/g, '""')}"`;
 
                 const row = [
@@ -2255,7 +2279,6 @@
                 csvString += row.join(",") + "\n";
             });
 
-            // Menggunakan Blob dengan \uFEFF agar Excel otomatis mengenali karakter UTF-8
             const blob = new Blob(["\uFEFF" + csvString], { type: 'text/csv;charset=utf-8;' });
             const url = URL.createObjectURL(blob);
             
@@ -2269,20 +2292,17 @@
             showToast("✅ Data Tahsin berhasil diekspor ke Excel (CSV)");
         }
 
-        // --- STREAMING_CHUNK:Finalizing rendering logic and HTML2Canvas export utilities... ---
         // --- 9. HTML2CANVAS EXPORT (ID Card, Syahadah, Raport) ---
-        
         async function captureElement(elementId, downloadName) {
             showLoading(true);
             const element = document.getElementById(elementId);
-            element.classList.remove('hidden'); // Ensure visible to canvas
+            element.classList.remove('hidden'); 
             
-            // Wait slightly for DOM to render if needed (especially for QR)
             await new Promise(r => setTimeout(r, 100));
 
             try {
                 const canvas = await html2canvas(element, {
-                    scale: 3, // High resolution
+                    scale: 3, 
                     useCORS: true,
                     backgroundColor: '#ffffff'
                 });
@@ -2290,7 +2310,6 @@
                 canvas.toBlob(blob => {
                     const url = URL.createObjectURL(blob);
                     
-                    // Show in preview modal
                     const previewContainer = document.getElementById('preview-image-container');
                     previewContainer.innerHTML = '';
                     const img = document.createElement('img');
@@ -2298,7 +2317,6 @@
                     img.className = 'max-w-full max-h-[70vh] border shadow-sm';
                     previewContainer.appendChild(img);
                     
-                    // Setup download button
                     const btnDl = document.getElementById('btn-download-img');
                     btnDl.onclick = () => {
                         const a = document.createElement('a');
@@ -2325,14 +2343,13 @@
 
             document.getElementById('idcard-id').textContent = santri.id;
             
-            // Generate QR
             const qrContainer = document.getElementById('idcard-qr');
             qrContainer.innerHTML = '';
             new QRCode(qrContainer, {
                 text: santri.id,
                 width: 128,
                 height: 128,
-                colorDark : "#000000", // Hitam Solid
+                colorDark : "#000000",
                 colorLight : "#ffffff",
                 correctLevel : QRCode.CorrectLevel.H
             });
@@ -2358,70 +2375,56 @@
             document.getElementById('syh-tanggal').textContent = dateObj.toLocaleDateString('id-ID', options);
             document.getElementById('syh-penyimak').textContent = hafalan.penyimak;
 
-            // Make A4 Landscape class visible to correctly measure
             const template = document.getElementById('template-syahadah');
             template.classList.remove('hidden');
             
             captureElement('template-syahadah', `Syahadah_${santri.nama.replace(/\s+/g, '_')}.png`);
         }
 
-        // FUNGSI BARU: CETAK SYAHADAH GLOBAL (REKAPITULASI HAFALAN PER PERIODE)
         function cetakSyahadahGlobal(santriId, monthStr) {
             const santri = getData(DB_KEY.SANTRI).find(s => s.id === santriId);
             const settings = getSettings();
             
-            // Ambil semua hafalan Al-Qur'an santri ini
             const allHafalan = getData(DB_KEY.HAFALAN).filter(h => h.santriId === santriId && h.kategori === 'Quran');
-            
-            // Hafalan khusus di bulan/periode terpilih
             const hafSantriBulanIni = allHafalan.filter(h => h.tanggal.startsWith(monthStr));
             
             if(hafSantriBulanIni.length === 0 && allHafalan.length === 0) {
                 return showToast('⚠️ Belum ada riwayat setoran hafalan Al-Qur\'an untuk santri ini.');
             }
 
-            // Ekstrak Total Juz All Time (Unik)
             let juzSetTotal = new Set();
             allHafalan.forEach(h => {
                 const match = h.detail.match(/Juz (\d+)/);
                 if(match) juzSetTotal.add(parseInt(match[1]));
             });
             
-            // Ekstrak Juz yang disetorkan KHUSUS di bulan terpilih
             let juzSetBulanIni = new Set();
             hafSantriBulanIni.forEach(h => {
                 const match = h.detail.match(/Juz (\d+)/);
                 if(match) juzSetBulanIni.add(parseInt(match[1]));
             });
 
-            // Urutkan angka Juz
             const arrJuzBulanIni = Array.from(juzSetBulanIni).sort((a,b) => a-b);
             const strJuzBulanIni = arrJuzBulanIni.join(', ');
 
-            // Format Nama Bulan
             const [y, m] = monthStr.split('-');
             const d = new Date(y, m-1, 1);
             const monthName = d.toLocaleDateString('id-ID', { month: 'long', year: 'numeric' });
 
-            // Suntik Data ke Template
             document.getElementById('syh-lembaga').textContent = settings.nama;
             document.getElementById('syh-nama').textContent = santri.nama;
             document.getElementById('syh-id').textContent = 'ID: ' + santri.id;
-            
             document.getElementById('syh-kategori').textContent = "Al-Qur'an (Rekapitulasi Global)";
             
-            // Tampilkan Detail Total Pencapaian & Setoran Bulan Ini
             document.getElementById('syh-detail').innerHTML = `
                 Total Hafalan Tercapai: <span class="text-emerald-600">${juzSetTotal.size} Juz</span><br>
                 <span class="text-lg text-gray-600 font-normal mt-2 block">Juz yang disetorkan pada ${monthName}: ${strJuzBulanIni || '-'}</span>
             `;
             
             document.getElementById('syh-predikat').textContent = "TERUJI (" + monthName.toUpperCase() + ")";
-            
             document.getElementById('syh-tanggal').textContent = new Date().toLocaleDateString('id-ID', { year: 'numeric', month: 'long', day: 'numeric' });
             document.getElementById('syh-penyimak').textContent = "Pengurus Tahfidz";
 
-            // Munculkan untuk dicapture
             const template = document.getElementById('template-syahadah');
             template.classList.remove('hidden');
             
@@ -2430,7 +2433,7 @@
 
         // --- 10. RAPORT MODULE ---
         function generateLaporanGlobal() {
-            const filterMonth = document.getElementById('filter-raport-month').value; // Format: YYYY-MM
+            const filterMonth = document.getElementById('filter-raport-month').value;
             if(!filterMonth) return showToast('⚠️ Pilih bulan dan tahun terlebih dahulu!');
 
             const santris = getData(DB_KEY.SANTRI);
@@ -2441,14 +2444,12 @@
             tbody.innerHTML = '';
 
             santris.forEach(s => {
-                // Filter absensi by month string
                 const absSantri = absensis.filter(a => a.santriId === s.id && a.tanggal.startsWith(filterMonth));
                 const hadir = absSantri.filter(a => a.status === 'Hadir').length;
                 const izin = absSantri.filter(a => a.status === 'Izin').length;
                 const sakit = absSantri.filter(a => a.status === 'Sakit').length;
                 const alpa = absSantri.filter(a => a.status === 'Alpa').length;
 
-                // Filter hafalan
                 const hafSantri = hafalans.filter(h => h.santriId === s.id && h.tanggal.startsWith(filterMonth)).length;
 
                 const tr = document.createElement('tr');
@@ -2481,7 +2482,6 @@
             document.getElementById('rap-id').textContent = santri.id;
             document.getElementById('rap-kelas').textContent = santri.kelas;
 
-            // Month text formatting
             const [y, m] = monthStr.split('-');
             const d = new Date(y, m-1, 1);
             const monthName = d.toLocaleDateString('id-ID', { month: 'long', year: 'numeric' });
@@ -2490,14 +2490,12 @@
             const today = new Date().toLocaleDateString('id-ID', { day:'numeric', month: 'long', year: 'numeric' });
             document.getElementById('rap-cetak').textContent = today;
 
-            // Calculate Attendance
             const absSantri = getData(DB_KEY.ABSENSI).filter(a => a.santriId === santriId && a.tanggal.startsWith(monthStr));
             document.getElementById('rap-hadir').textContent = absSantri.filter(a => a.status === 'Hadir').length;
             document.getElementById('rap-izin').textContent = absSantri.filter(a => a.status === 'Izin').length;
             document.getElementById('rap-sakit').textContent = absSantri.filter(a => a.status === 'Sakit').length;
             document.getElementById('rap-alpa').textContent = absSantri.filter(a => a.status === 'Alpa').length;
 
-            // Render Hafalan Details
             const hafSantri = getData(DB_KEY.HAFALAN).filter(h => h.santriId === santriId && h.tanggal.startsWith(monthStr));
             const tbodyHaf = document.getElementById('rap-hafalan-body');
             tbodyHaf.innerHTML = '';
@@ -2522,7 +2520,6 @@
         }
 
 
-        // --- STREAMING_CHUNK:Finalizing local storage sync and backup systems... ---
         // --- 11. CLOUD SYNC & BACKUP ---
         function downloadBackup() {
             const data = {
