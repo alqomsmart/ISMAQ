@@ -1921,7 +1921,7 @@
             const dt = new Date(absensi.tanggal);
             const dtStr = dt.toLocaleDateString('id-ID', {day: 'numeric', month: 'long', year: 'numeric'});
 
-            const msg = `*LAPORAN PRESENSI SIPONTREN*\n\nAssalamualaikum Warahmatullahi Wabarakatuh.\nBapak/Ibu Wali Santri, menginformasikan bahwa ananda:\n\n👤 Nama : *${santri.nama}*\n📚 Sesi : *${jadwal ? jadwal.nama : 'Reguler'}*\n⏱️ Waktu : ${dtStr} - Pukul ${absensi.waktu} WIB\n\nTercatat dengan status kehadiran : *${absensi.status.toUpperCase()}*.\n\nDemikian laporan ini disampaikan secara otomatis oleh Sistem Database Pondok Pesantren.\nWassalamualaikum.`;
+            const msg = `*LAPORAN PRESENSI SIPONTREN*\n\nAssalamualaikum Wr.Wb.\nBapak/Ibu Wali Santri, menginformasikan bahwa ananda:\n\n👤 Nama : *${santri.nama}*\n📚 Sesi : *${jadwal ? jadwal.nama : 'Reguler'}*\n⏱️ Waktu : ${dtStr} - Pukul ${absensi.waktu} WIB\n\nTercatat dengan status kehadiran : *${absensi.status.toUpperCase()}*.\n\nMohon do'a dan dukungannya selalu....\nWassalamualaikum.`;
             
             const waLink = `https://wa.me/${phone}?text=${encodeURIComponent(msg)}`;
             window.open(waLink, '_blank');
