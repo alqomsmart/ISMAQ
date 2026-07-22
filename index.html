@@ -8,7 +8,7 @@
     <!-- PWA Manifest & App Icons (Silakan ubah logo.png sesuai file logo Anda nanti) -->
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#0f766e">
-    <link rel="apple-touch-icon" href="logo-pesantren-512.png">
+    <link rel="apple-touch-icon" href="https://cdn-icons-png.flaticon.com/512/3595/3595514.png">
     
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -1009,7 +1009,7 @@
                     </div>
                     <div class="text-center">
                         <p class="text-sm text-gray-500 mb-20 font-semibold uppercase tracking-wider">Penyimak / Ustaz</p>
-                        <p id="syh-penyimak" class="font-bold text-gray-800 border-t-2 border-gray-400 pt-2 px-8">Nama Ustaz</p>
+                        <p id="syh-penyimak" class="font-bold text-gray-800 border-t-2 border-gray-400 pt-2 px-8">Nama Ustadz</p>
                     </div>
                 </div>
             </div>
@@ -1148,7 +1148,7 @@
             <div class="flex justify-between px-16 mt-16">
                 <div class="text-center">
                     <p class="text-xs mb-20 font-bold uppercase tracking-widest text-gray-500">Guru Penguji</p>
-                    <p class="font-bold border-b-2 border-gray-800 pb-1 text-gray-900 text-lg" id="ths-print-ttd-penguji">Nama Ustaz</p>
+                    <p class="font-bold border-b-2 border-gray-800 pb-1 text-gray-900 text-lg" id="ths-print-ttd-penguji">Nama Ustadz</p>
                 </div>
                 <div class="text-center">
                     <p class="text-xs mb-20 font-bold uppercase tracking-widest text-gray-500">Santri Teruji</p>
@@ -1921,7 +1921,7 @@
             const dt = new Date(absensi.tanggal);
             const dtStr = dt.toLocaleDateString('id-ID', {day: 'numeric', month: 'long', year: 'numeric'});
 
-            const msg = `*LAPORAN PRESENSI SIPONTREN*\n\nAssalamualaikum Wr.Wb.\nBapak/Ibu Wali Santri, menginformasikan bahwa ananda:\n\n👤 Nama : *${santri.nama}*\n📚 Sesi : *${jadwal ? jadwal.nama : 'Reguler'}*\n⏱️ Waktu : ${dtStr} - Pukul ${absensi.waktu} WIB\n\nTercatat dengan status kehadiran : *${absensi.status.toUpperCase()}*.\n\nMohon do'a dan dukungannya selalu....\nWassalamualaikum.`;
+            const msg = `*LAPORAN PRESENSI SIPONTREN*\n\nAssalamualaikum Wr.Wb.\nBapak/Ibu Wali Santri, menginformasikan bahwa ananda:\n\n👤 Nama : *${santri.nama}*\n📚 Sesi : *${jadwal ? jadwal.nama : 'Reguler'}*\n⏱️ Waktu : ${dtStr} - Pukul ${absensi.waktu} WIB\n\nTercatat dengan status kehadiran : *${absensi.status.toUpperCase()}*.\n\nDemikian laporan ini disampaikan secara otomatis oleh Sistem Database Pondok Pesantren.\nMohon do'a dan dukungannya terus ya Bapak/Ibu.`;
             
             const waLink = `https://wa.me/${phone}?text=${encodeURIComponent(msg)}`;
             window.open(waLink, '_blank');
