@@ -6,7 +6,7 @@
     <title id="app-title">SIPONTREN - Sistem Informasi Pondok Pesantren</title>
     
     <!-- PWA Identity Tags (Dynamic) -->
-    <link rel="icon" id="dynamic-favicon" href="https://cdn-icons-png.flaticon.com/512/3595/3595514.png">
+    <link rel="icon" id="dynamic-favicon" href="logo-pesantren-192.png">
     <link rel="manifest" id="dynamic-manifest">
     <meta name="theme-color" content="#0f766e">
 
@@ -61,10 +61,10 @@
     <aside class="w-64 bg-teal-800 text-white flex flex-col h-screen shrink-0 transition-all duration-300 shadow-2xl z-20 hidden md:flex" id="sidebar">
         <div class="p-6 flex items-center gap-3 border-b border-teal-700/50">
             <div class="w-10 h-10 bg-white rounded-xl flex items-center justify-center shrink-0 shadow-lg p-1">
-                <img id="sidebar-logo" src="https://cdn-icons-png.flaticon.com/512/3595/3595514.png" alt="Logo" class="w-full h-full object-contain">
+                <img id="sidebar-logo" src="logo-pesantren-192.png" alt="Logo Santri Mujahid Al Qomariah" class="w-full h-full object-contain">
             </div>
             <div class="overflow-hidden min-w-0">
-                <h1 id="sidebar-title" class="text-base font-bold line-clamp-2 leading-tight">SIPONTREN App</h1>
+                <h1 id="sidebar-title" class="text-base font-bold line-clamp-2 leading-tight">Santri Mujahid Al Qomariah</h1>
             </div>
         </div>
         
@@ -406,7 +406,7 @@
                         <div id="raport-content" class="border border-gray-200 rounded-xl p-8 bg-white shadow-sm text-gray-800">
                             <div class="text-center border-b-2 border-gray-800 pb-6 mb-6">
                                 <div class="flex justify-center mb-4">
-                                    <img id="r-logo" src="https://cdn-icons-png.flaticon.com/512/3595/3595514.png" class="w-20 h-20 object-contain">
+                                    <img id="r-logo" src="logo-pesantren-192.png" class="w-20 h-20 object-contain">
                                 </div>
                                 <h1 id="r-nama-pesantren" class="text-2xl font-bold uppercase tracking-wider">SIPONTREN</h1>
                                 <h2 class="text-lg font-semibold mt-1">Laporan Pencapaian Program Tahfidz & Tahsin</h2>
@@ -505,7 +505,7 @@
                                 <label class="block text-sm font-medium text-gray-700 mb-1">Logo Lembaga (URL Gambar / Base64)</label>
                                 <div class="flex gap-3 items-start">
                                     <div class="w-16 h-16 bg-gray-100 rounded-lg border flex items-center justify-center shrink-0 overflow-hidden">
-                                        <img id="setting-logo-preview" src="https://cdn-icons-png.flaticon.com/512/3595/3595514.png" class="w-full h-full object-contain p-1">
+                                        <img id="setting-logo-preview" src="logo-pesantren-192.png" class="w-full h-full object-contain p-1">
                                     </div>
                                     <div class="flex-1 space-y-2">
                                         <input type="text" id="setting-logo-url" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm outline-none" placeholder="https://contoh.com/logo.png">
@@ -585,7 +585,7 @@
             <div class="bg-teal-700 p-6 text-white rounded-b-[2rem] shadow-sm relative">
                 <button onclick="closeModal('modal-qr')" class="absolute top-4 right-4 text-white/80 hover:text-white"><i class="fas fa-times text-xl"></i></button>
                 <div class="w-16 h-16 bg-white rounded-2xl mx-auto mb-3 flex items-center justify-center shadow-lg">
-                    <img id="qr-modal-logo" src="https://cdn-icons-png.flaticon.com/512/3595/3595514.png" class="w-10 h-10 object-contain">
+                    <img id="qr-modal-logo" src="logo-pesantren-192.png" class="w-10 h-10 object-contain">
                 </div>
                 <h3 class="font-bold text-xl uppercase tracking-wider">Kartu Presensi</h3>
             </div>
@@ -730,7 +730,14 @@
         // --- 1. KONFIGURASI DATABASE & STATE ---
         const DB_KEY = { SANTRI: 'sipontren_santri', ASATIDZ: 'sipontren_asatidz', JADWAL: 'sipontren_jadwal', ABSENSI: 'sipontren_absensi', HAFALAN: 'sipontren_hafalan', TAHSIN: 'sipontren_tahsin', SETTING: 'sipontren_setting' };
         
-        // Supabase Mock for Canvas (Berjalan di LocalStorage jika iframe, agar aman)
+        const DEFAULT_LOGO = 'logo-pesantren-192.png';
+        const DEFAULT_NAMA = 'Santri Mujahid Al Qomariah';
+
+        // Supabase Settings
+        const supabaseUrl = 'https://kttckwvtezzqmsdrtrml.supabase.co';
+        const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imt0dGNrd3Z0ZXp6cW1zZHJ0cm1sIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQ3NTAzMjQsImV4cCI6MjEwMDMyNjMyNH0.Wcx4rbBeSrCniRiI7VkU6yNUmkJJZfpNCTab2L0ovCg';
+        let supabaseClient = null;
+        let realtimeSubscription = null;
         let isCloudMode = false;
         
         // Data Al-Quran statis
@@ -740,9 +747,75 @@
         let html5QrcodeScanner = null;
         let chartInstance = null;
 
-        // Base Data Functions
+        // Base Data Functions & Supabase Sync
+        async function initSupabase() {
+            try {
+                supabaseClient = supabase.createClient(supabaseUrl, supabaseKey);
+                isCloudMode = true;
+                const syncUI = document.getElementById('sync-status');
+                
+                await syncFromSupabase();
+
+                // Cek apakah aplikasi berjalan di dalam Iframe (Canvas Preview) yang memblokir WebSocket
+                const isCanvas = window.self !== window.top;
+                
+                if (isCanvas) {
+                    syncUI.innerHTML = `<i class="fas fa-cloud text-blue-500"></i> <span class="text-blue-600">Cloud Sync (Aman)</span>`;
+                    syncUI.classList.remove('hidden');
+                    console.log("Canvas mode detected: Realtime WebSockets disabled to prevent errors. Using REST sync.");
+                } else {
+                    syncUI.innerHTML = `<i class="fas fa-cloud text-emerald-500"></i> <span class="text-emerald-700">Real-time Aktif</span>`;
+                    syncUI.classList.remove('hidden');
+
+                    if (realtimeSubscription) realtimeSubscription.unsubscribe();
+                    realtimeSubscription = supabaseClient
+                        .channel('sipontren_changes')
+                        .on('postgres_changes', { event: '*', schema: 'public', table: 'sipontren_storage' }, payload => { 
+                            syncFromSupabase(); 
+                        })
+                        .subscribe((status, err) => {
+                            if (err) console.warn("Supabase Realtime error:", err);
+                        });
+                }
+            } catch(e) {
+                console.error("Supabase init error:", e);
+                isCloudMode = false;
+            }
+        }
+
+        async function syncFromSupabase() {
+            if(!supabaseClient) return;
+            try {
+                const { data, error } = await supabaseClient.from('sipontren_storage').select('*');
+                if(error) { console.error(error); return; }
+                if(data) {
+                    let hasChanges = false;
+                    data.forEach(row => {
+                        const localData = localStorage.getItem(row.key);
+                        const remoteData = JSON.stringify(row.value);
+                        if(localData !== remoteData) {
+                            localStorage.setItem(row.key, remoteData);
+                            hasChanges = true;
+                        }
+                    });
+                    if(hasChanges) refreshAllViews();
+                }
+            } catch(e) { console.error(e); }
+        }
+
+        async function syncToSupabase(key, value) {
+            if(!supabaseClient) return;
+            try {
+                const { error } = await supabaseClient.from('sipontren_storage').upsert({ key: key, value: value, updated_at: new Date() }, { onConflict: 'key' });
+                if (error) console.error("Sync error:", error);
+            } catch(e) { console.error(e); }
+        }
+
         function getData(key) { return JSON.parse(localStorage.getItem(key)) || []; }
-        function saveData(key, data) { localStorage.setItem(key, JSON.stringify(data)); }
+        function saveData(key, data) { 
+            localStorage.setItem(key, JSON.stringify(data)); 
+            if(isCloudMode) syncToSupabase(key, data);
+        }
         function generateId(prefix) { return `${prefix}-${Date.now().toString().slice(-6)}`; }
 
         // --- CUSTOM DIALOGS PENGGANTI ALERT BROWSER ---
@@ -795,7 +868,8 @@
         // --- PENGATURAN & PWA IDENTITY ---
         function muatPengaturan() {
             let config = getData(DB_KEY.SETTING);
-            if(!config || config.length === 0) config = { nama: 'SIPONTREN App', logo: 'https://cdn-icons-png.flaticon.com/512/3595/3595514.png' };
+            if(!config || !config.nama) config = { nama: DEFAULT_NAMA, logo: DEFAULT_LOGO };
+            if(!config.logo) config.logo = DEFAULT_LOGO;
             
             // Terapkan ke UI Sidebar
             document.getElementById('sidebar-title').innerText = config.nama;
@@ -816,9 +890,16 @@
             document.getElementById('dynamic-favicon').href = config.logo;
             
             const manifestData = {
-                name: config.nama, short_name: config.nama.substring(0,12), start_url: ".", display: "standalone",
-                background_color: "#f3f4f6", theme_color: "#0f766e",
-                icons: [{ src: config.logo, sizes: "192x192 512x512", type: "image/png", purpose: "any maskable" }]
+                name: config.nama, 
+                short_name: config.nama.length > 12 ? config.nama.substring(0, 12) + "..." : config.nama, 
+                start_url: ".", 
+                display: "standalone",
+                background_color: "#f3f4f6", 
+                theme_color: "#0f766e",
+                icons: [
+                    { src: config.logo, sizes: "192x192", type: "image/png", purpose: "any maskable" },
+                    { src: config.logo, sizes: "512x512", type: "image/png", purpose: "any maskable" }
+                ]
             };
             const stringManifest = encodeURIComponent(JSON.stringify(manifestData));
             document.getElementById('dynamic-manifest').href = 'data:application/manifest+json;charset=utf-8,' + stringManifest;
@@ -838,15 +919,15 @@
         }
 
         function simpanPengaturan() {
-            const nama = document.getElementById('setting-nama').value || 'SIPONTREN App';
+            const nama = document.getElementById('setting-nama').value || DEFAULT_NAMA;
             let logo = document.getElementById('setting-logo-url').value;
             if(tempBase64Logo && !logo) logo = tempBase64Logo; // Prioritas file upload
-            if(!logo) logo = 'https://cdn-icons-png.flaticon.com/512/3595/3595514.png';
+            if(!logo) logo = DEFAULT_LOGO;
 
             const config = { nama, logo };
             saveData(DB_KEY.SETTING, config);
             muatPengaturan();
-            showToast("Pengaturan Identitas Berhasil Disimpan!");
+            showToast("Pengaturan Identitas & Logo PWA Berhasil Disimpan!");
         }
 
         async function hapusCacheLokal() {
@@ -936,21 +1017,21 @@
             const id = document.getElementById('qr-id-santri').innerText;
             const nama = document.getElementById('qr-nama-santri').innerText;
             const qrSrc = document.getElementById('qr-image').src;
-            const logo = getData(DB_KEY.SETTING).logo || 'https://cdn-icons-png.flaticon.com/512/3595/3595514.png';
-            const pesantren = getData(DB_KEY.SETTING).nama || 'SIPONTREN';
+            const logo = getData(DB_KEY.SETTING).logo || DEFAULT_LOGO;
+            const pesantren = getData(DB_KEY.SETTING).nama || DEFAULT_NAMA;
             
             const printWindow = window.open('', '_blank', 'width=400,height=600');
             printWindow.document.write(`
                 <html><head><title>Kartu Santri - ${nama}</title><style>
                     body { font-family: 'Arial', sans-serif; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; background-color: #f3f4f6; }
                     .card { background: white; border: 2px solid #0f766e; border-radius: 12px; padding: 24px; text-align: center; width: 280px; box-shadow: 0 8px 16px rgba(0,0,0,0.1); }
-                    .logo { width: 55px; height: 55px; margin-bottom: 12px; object-fit: contain;}
-                    .title { color: #0f766e; font-size: 15px; font-weight: 900; margin: 0 0 4px 0; text-transform: uppercase; letter-spacing: 1px; }
-                    .name { color: #1f2937; font-size: 20px; font-weight: bold; margin: 12px 0 2px 0; }
-                    .id { color: #6b7280; font-size: 13px; font-family: monospace; margin: 0 0 16px 0; letter-spacing: 2px; }
-                    .qr-container { padding: 12px; border: 2px dashed #cbd5e1; border-radius: 12px; display: inline-block; margin-bottom: 16px; background-color: #f8fafc; }
-                    .qr-img { width: 170px; height: 170px; display: block; }
-                    .footer { font-size: 11px; color: #64748b; border-top: 2px solid #e2e8f0; padding-top: 12px; font-weight: bold; }
+                    .logo { width: 60px; height: 60px; margin-bottom: 8px; object-fit: contain;}
+                    .title { color: #0f766e; font-size: 14px; font-weight: 900; margin: 0 0 4px 0; text-transform: uppercase; letter-spacing: 1px; }
+                    .name { color: #1f2937; font-size: 18px; font-weight: bold; margin: 10px 0 2px 0; }
+                    .id { color: #6b7280; font-size: 13px; font-family: monospace; margin: 0 0 14px 0; letter-spacing: 2px; }
+                    .qr-container { padding: 12px; border: 2px dashed #cbd5e1; border-radius: 12px; display: inline-block; margin-bottom: 14px; background-color: #f8fafc; }
+                    .qr-img { width: 160px; height: 160px; display: block; }
+                    .footer { font-size: 11px; color: #64748b; border-top: 2px solid #e2e8f0; padding-top: 10px; font-weight: bold; }
                     @media print { body { background-color: white; } .card { box-shadow: none; border: 2px solid #000; } }
                 </style></head><body>
                     <div class="card">
@@ -1275,8 +1356,8 @@
 
             // Set Header Identitas
             const config = getData(DB_KEY.SETTING);
-            document.getElementById('r-nama-pesantren').innerText = config.nama || 'SIPONTREN';
-            document.getElementById('r-logo').src = config.logo || 'https://cdn-icons-png.flaticon.com/512/3595/3595514.png';
+            document.getElementById('r-nama-pesantren').innerText = config.nama || DEFAULT_NAMA;
+            document.getElementById('r-logo').src = config.logo || DEFAULT_LOGO;
             
             document.getElementById('r-nama').innerText = santri.nama;
             document.getElementById('r-id').innerText = santri.id;
@@ -1461,7 +1542,8 @@
 
         // Init App
         window.onload = () => {
-            document.getElementById('sync-status').innerHTML = `<i class="fas fa-check-circle text-teal-600"></i> <span class="text-teal-700">Ready (Local)</span>`;
+            initSupabase(); // Panggil Inisialisasi Supabase disini
+            
             const today = new Date().toISOString().split('T')[0];
             document.getElementById('h-tgl').value = today; document.getElementById('t-tgl').value = today; document.getElementById('absen-tanggal').value = today;
             refreshAllViews();
