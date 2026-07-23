@@ -43,10 +43,10 @@
     <aside class="w-64 bg-teal-800 text-white flex flex-col h-screen shrink-0 transition-all duration-300 shadow-2xl z-20 hidden md:flex" id="sidebar">
         <div class="p-6 flex items-center gap-3 border-b border-teal-700/50">
             <div class="w-10 h-10 bg-white rounded-xl flex items-center justify-center shrink-0 shadow-lg">
-                <img src="https://cdn-icons-png.flaticon.com/512/3595/3595514.png" alt="Logo" class="w-7 h-7">
+                <img src="https://cdn-icons-png.flaticon.com/512/3595/3595514.png" alt="Logo" class="w-7 h-7" id="sidebar-logo">
             </div>
             <div class="overflow-hidden min-w-0">
-                <h1 class="text-base font-bold line-clamp-2 leading-tight">Santri Mujahid Al Qoma...</h1>
+                <h1 class="text-base font-bold line-clamp-2 leading-tight" id="sidebar-title">Santri Mujahid Al Qoma...</h1>
             </div>
         </div>
         
@@ -448,6 +448,32 @@
             <!-- 9. PENGATURAN -->
             <section id="tab-pengaturan" class="tab-content">
                 <div class="max-w-2xl mx-auto space-y-6">
+                    <!-- Pengaturan Profil Lembaga -->
+                    <div class="glass-card rounded-2xl bg-white shadow-sm p-6 border border-gray-100">
+                        <h3 class="font-bold text-gray-800 mb-4 flex items-center gap-2"><i class="fas fa-building text-teal-600"></i> Profil Lembaga</h3>
+                        <div class="space-y-4">
+                            <div>
+                                <label class="block text-sm font-medium mb-1 text-gray-700">Nama Lembaga</label>
+                                <input type="text" id="pengaturan-nama" placeholder="Masukkan nama pesantren..." class="w-full border border-gray-300 rounded-xl px-4 py-2 outline-none focus:ring-2 focus:ring-teal-500">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium mb-1 text-gray-700">Logo Lembaga</label>
+                                <div class="flex items-center gap-4">
+                                    <div class="w-16 h-16 rounded-xl border-2 border-dashed border-gray-300 flex items-center justify-center overflow-hidden bg-gray-50 shrink-0">
+                                        <img id="pengaturan-logo-preview" src="https://cdn-icons-png.flaticon.com/512/3595/3595514.png" class="w-full h-full object-contain p-1">
+                                    </div>
+                                    <div class="flex-1">
+                                        <input type="file" id="pengaturan-logo-file" accept="image/*" class="text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-teal-50 file:text-teal-700 hover:file:bg-teal-100" onchange="previewLogo(event)">
+                                        <p class="text-xs text-gray-400 mt-1">Gunakan gambar persegi maks 1MB.</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <button onclick="savePengaturan()" class="bg-teal-600 hover:bg-teal-700 text-white px-5 py-2.5 rounded-xl text-sm font-semibold transition flex items-center gap-2 shadow-md">
+                                <i class="fas fa-save"></i> Simpan Profil
+                            </button>
+                        </div>
+                    </div>
+
                     <div class="glass-card rounded-2xl bg-white shadow-sm p-6 border border-gray-100">
                         <h3 class="font-bold text-red-600 mb-2 flex items-center gap-2"><i class="fas fa-exclamation-triangle"></i> Zona Berbahaya (Reset Data)</h3>
                         <p class="text-sm text-gray-500 mb-4">Tindakan ini akan menghapus memori cache lokal. Jangan khawatir, data di awan tidak akan terhapus.</p>
@@ -674,7 +700,7 @@
 
     <script>
         // --- 1. KONFIGURASI DATABASE & STATE ---
-        const DB_KEY = { SANTRI: 'sipontren_santri', ASATIDZ: 'sipontren_asatidz', JADWAL: 'sipontren_jadwal', ABSENSI: 'sipontren_absensi', HAFALAN: 'sipontren_hafalan', TAHSIN: 'sipontren_tahsin' };
+        const DB_KEY = { SANTRI: 'sipontren_santri', ASATIDZ: 'sipontren_asatidz', JADWAL: 'sipontren_jadwal', ABSENSI: 'sipontren_absensi', HAFALAN: 'sipontren_hafalan', TAHSIN: 'sipontren_tahsin', PENGATURAN: 'sipontren_pengaturan' };
         
         // Supabase Settings (Paten)
         const supabaseUrl = 'https://kttckwvtezzqmsdrtrml.supabase.co';
@@ -848,6 +874,7 @@
             if(document.getElementById('table-tahsin')) renderTahsinTable();
             renderDashboard();
             populateDropdowns();
+            loadPengaturan();
         }
 
         function renderSantriTable() {
@@ -1014,7 +1041,7 @@
             pesan += `📅 Tanggal: ${tglIndo}\n`;
             pesan += `📚 Sesi KBM: ${namaSesi}\n`;
             pesan += `📋 Status Kehadiran: *${status.toUpperCase()}*\n\n`;
-            pesan += `Mugia Alloh SWT salawasna maparin kasehatan, kemudahan ilmu & rezeki kanggo sadayana, aamiin. 🙏`;
+            pesan += `Mugia Alloh SWT, senantiasa maparin kemudahan ilmu, Kabarokahan rezeki & Kesehatan, aamiin. 🙏`;
 
             // Format nomor HP (Ganti awalan 0 menjadi 62)
             let noWA = santri.wa;
@@ -1252,6 +1279,93 @@
         }
 
         async function toggleScanner() {
+            const btn = document.getElementById('btn-scan');
+            const placeholder = document.getElementById('qr-placeholder');
+            const readerDiv = document.getElementById('qr-reader');
+            
+            if (isScanning) {
+                if (html5QrcodeScanner) {
+                    await html5QrcodeScanner.stop();
+                    html5QrcodeScanner.clear();
+                }
+                isScanning = false;
+                readerDiv.classList.add('hidden');
+                placeholder.classList.remove('hidden');
+                btn.innerHTML = '<i class="fas fa-camera mr-2"></i> Mulai Scan QR';
+                btn.classList.replace('bg-red-600', 'bg-teal-600');
+                btn.classList.replace('hover:bg-red-700', 'hover:bg-teal-700');
+            } else {
+                isScanning = true;
+                readerDiv.classList.remove('hidden');
+                placeholder.classList.add('hidden');
+                btn.innerHTML = '<i class="fas fa-stop mr-2"></i> Hentikan Scan';
+                btn.classList.replace('bg-teal-600', 'bg-red-600');
+                btn.classList.replace('hover:bg-teal-700', 'hover:bg-red-700');
+                
+                html5QrcodeScanner = new Html5Qrcode("qr-reader");
+                const config = { fps: 10, qrbox: { width: 250, height: 250 } };
+                
+                html5QrcodeScanner.start({ facingMode: "environment" }, config, (decodedText) => {
+                    prosesScanKehadiran(decodedText);
+                    // Hentikan otomatis setelah berhasil scan
+                    toggleScanner();
+                }).catch(err => {
+                    console.log("Kamera sedang disiapkan / Error:", err);
+                });
+            }
+        }
+
+        function prosesScanKehadiran(santriId) {
+            const tanggal = document.getElementById('absen-tanggal').value;
+            const jadwalId = document.getElementById('absen-jadwal').value;
+            
+            if(!tanggal || !jadwalId) {
+                showToast("Pilih Tanggal dan Sesi Jadwal terlebih dahulu!", true);
+                return;
+            }
+
+            const santris = getData(DB_KEY.SANTRI);
+            const santri = santris.find(s => s.id === santriId);
+            
+            if(!santri) {
+                showToast("QR Code tidak valid / Santri tidak ditemukan!", true);
+                return;
+            }
+
+            let absensiArr = getData(DB_KEY.ABSENSI);
+            const existingIndex = absensiArr.findIndex(a => a.tanggal === tanggal && a.jadwalId === jadwalId && a.santriId === santriId);
+            
+            if(existingIndex > -1) {
+                absensiArr[existingIndex].status = 'Hadir';
+            } else {
+                absensiArr.push({ id: generateId('ABS'), tanggal, jadwalId, santriId, status: 'Hadir' });
+            }
+            
+            saveData(DB_KEY.ABSENSI, absensiArr);
+            showToast(`${santri.nama} berhasil absen (Hadir)!`);
+            sinkronkanTampilanAbsen();
+        }
+
+        function simpanAbsensiMasal() {
+            const santris = getData(DB_KEY.SANTRI);
+            const tanggal = document.getElementById('absen-tanggal').value;
+            const jadwalId = document.getElementById('absen-jadwal').value;
+            if(!tanggal || !jadwalId) return customAlert('Pilih Tanggal dan Sesi Jadwal terlebih dahulu!');
+
+            let absensiArr = getData(DB_KEY.ABSENSI);
+            let count = 0;
+            santris.forEach(s => {
+                const radio = document.querySelector(`input[name="abs-${s.id}"]:checked`);
+                if(radio) {
+                    const existingIndex = absensiArr.findIndex(a => a.tanggal === tanggal && a.jadwalId === jadwalId && a.santriId === s.id);
+                    if (existingIndex > -1) {
+                        absensiArr[existingIndex].status = radio.value;
+                    } else {
+                        absensiArr.push({ id: generateId('ABS'), tanggal, jadwalId, santriId: s.id, status: radio.value });
+                    }
+                    count++;
+                }
+            });
             saveData(DB_KEY.ABSENSI, absensiArr);
             showToast(`${count} Data Kehadiran Disimpan!`);
         }
@@ -1441,11 +1555,51 @@
             document.getElementById('qr-nama-santri').innerText = nama;
             document.getElementById('qr-id-santri').innerText = id;
             
-            // Generate QR Code menggunakan API, gunakan id sebagai datanya
             const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(id)}&color=0f766e`;
             document.getElementById('qr-image').src = qrUrl;
             
             openModal('modal-qr');
+        }
+
+        function loadPengaturan() {
+            const arr = getData(DB_KEY.PENGATURAN);
+            const config = (arr && arr.length > 0) ? arr[0] : { nama: "Santri Mujahid Al Qomariah", logo: "logo-pesantren-192.png" };
+            
+            const sidebarTitle = document.getElementById('sidebar-title');
+            const sidebarLogo = document.getElementById('sidebar-logo');
+            if (sidebarTitle) sidebarTitle.innerText = config.nama;
+            if (sidebarLogo) sidebarLogo.src = config.logo;
+            
+            const inputNama = document.getElementById('pengaturan-nama');
+            const inputLogoPreview = document.getElementById('pengaturan-logo-preview');
+            if (inputNama) inputNama.value = config.nama;
+            if (inputLogoPreview) inputLogoPreview.src = config.logo;
+        }
+
+        let tempLogoBase64 = null;
+        function previewLogo(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            if (file.size > 1024 * 1024) {
+                customAlert('Ukuran gambar terlalu besar! Maksimal 1MB.');
+                event.target.value = ''; return;
+            }
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                tempLogoBase64 = e.target.result;
+                document.getElementById('pengaturan-logo-preview').src = tempLogoBase64;
+            };
+            reader.readAsDataURL(file);
+        }
+
+        function savePengaturan() {
+            const nama = document.getElementById('pengaturan-nama').value;
+            let logo = tempLogoBase64 || document.getElementById('pengaturan-logo-preview').src;
+            if (!nama) return customAlert("Nama lembaga tidak boleh kosong!");
+            
+            saveData(DB_KEY.PENGATURAN, [{ nama, logo }]);
+            loadPengaturan();
+            showToast("Profil Lembaga Berhasil Disimpan!");
         }
 
         function printQRCode() {
@@ -1453,7 +1607,9 @@
             const nama = document.getElementById('qr-nama-santri').innerText;
             const qrSrc = document.getElementById('qr-image').src;
             
-            // Buka jendela kecil untuk persiapan cetak Kartu ID
+            const arr = getData(DB_KEY.PENGATURAN);
+            const config = (arr && arr.length > 0) ? arr[0] : { nama: "SIPONTREN", logo: "https://cdn-icons-png.flaticon.com/512/3595/3595514.png" };
+            
             const printWindow = window.open('', '_blank', 'width=400,height=600');
             printWindow.document.write(`
                 <html>
@@ -1462,7 +1618,7 @@
                     <style>
                         body { font-family: 'Arial', sans-serif; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; background-color: #f3f4f6; }
                         .card { background: white; border: 2px solid #0f766e; border-radius: 12px; padding: 24px; text-align: center; width: 280px; box-shadow: 0 8px 16px rgba(0,0,0,0.1); }
-                        .logo { width: 55px; height: 55px; margin-bottom: 12px; }
+                        .logo { width: 55px; height: 55px; margin-bottom: 12px; object-fit: contain; }
                         .title { color: #0f766e; font-size: 15px; font-weight: 900; margin: 0 0 4px 0; text-transform: uppercase; letter-spacing: 1px; }
                         .name { color: #1f2937; font-size: 20px; font-weight: bold; margin: 12px 0 2px 0; }
                         .id { color: #6b7280; font-size: 13px; font-family: monospace; margin: 0 0 16px 0; letter-spacing: 2px; }
@@ -1477,23 +1633,43 @@
                 </head>
                 <body>
                     <div class="card">
-                        <img src="https://cdn-icons-png.flaticon.com/512/3595/3595514.png" class="logo" alt="Logo Pesantren">
+                        <img src="${config.logo}" class="logo" alt="Logo Pesantren">
                         <h3 class="title">Kartu Presensi QR</h3>
                         <h2 class="name">${nama}</h2>
                         <p class="id">${id}</p>
                         <div class="qr-container">
                             <img src="${qrSrc}" class="qr-img" alt="QR Code">
                         </div>
-                        <p class="footer">SIPONTREN - Sistem Informasi Pondok</p>
+                        <p class="footer">${config.nama}</p>
                     </div>
                     <script>
-                        // Beri jeda 0.5 detik agar gambar QR Code termuat dulu sebelum di-print
                         window.onload = () => { setTimeout(() => { window.print(); window.close(); }, 500); }
                     <\/script>
                 </body>
                 </html>
             `);
             printWindow.document.close();
+        }
+
+        function kirimWARaport() {
+            const santriId = document.getElementById('raport-santri').value;
+            const santri = getData(DB_KEY.SANTRI).find(s => s.id === santriId);
+            if(!santri || !santri.wa) return customAlert("Nomor WA orang tua tidak ditemukan!");
+            
+            let noWA = santri.wa;
+            if (noWA.startsWith('0')) noWA = '62' + noWA.substring(1);
+            
+            const hafalan = document.getElementById('r-total-hafalan').innerText;
+            const progress = document.getElementById('r-progress-text').innerText;
+            const tahsin = document.getElementById('r-tahsin-catatan').innerText;
+            
+            let pesan = `Assalamu'alaikum Bapak/Ibu,\n\nBerikut ringkasan hasil belajar Ananda *${santri.nama}*:\n\n`;
+            pesan += `📖 *Progress Tahfidz:* ${progress}\n`;
+            pesan += `📊 *Total Hafalan:* ${hafalan}\n`;
+            pesan += `📝 *Catatan Tahsin:* ${tahsin}\n\n`;
+            pesan += `Terima kasih atas dukungan Bapak/Ibu. 🙏`;
+            
+            window.open(`https://wa.me/${noWA}?text=${encodeURIComponent(pesan)}`, '_blank');
         }
 
         window.onload = () => {
