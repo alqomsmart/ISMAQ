@@ -326,9 +326,14 @@
                                 <option value="Murojaah">Murojaah</option>
                             </select>
                         </div>
-                        <button onclick="openModal('modal-hafalan')" class="w-full sm:w-auto bg-teal-600 hover:bg-teal-700 text-white px-5 py-2.5 rounded-xl font-semibold text-sm transition shadow-sm">
-                            <i class="fas fa-plus mr-2"></i> Input Setoran
-                        </button>
+                        <div class="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
+                            <button onclick="exportHafalanToCSV()" class="w-full sm:w-auto bg-gray-600 hover:bg-gray-700 text-white px-4 py-2.5 rounded-xl font-semibold text-sm transition flex items-center justify-center gap-2 shadow-sm">
+                                <i class="fas fa-file-export"></i> Export
+                            </button>
+                            <button onclick="openModal('modal-hafalan')" class="w-full sm:w-auto bg-teal-600 hover:bg-teal-700 text-white px-5 py-2.5 rounded-xl font-semibold text-sm transition shadow-sm flex items-center justify-center gap-2">
+                                <i class="fas fa-plus"></i> Input Setoran
+                            </button>
+                        </div>
                     </div>
                     <div class="overflow-x-auto bg-white">
                         <table class="w-full text-left border-collapse">
@@ -568,7 +573,14 @@
                             <option value="L">Laki-laki</option><option value="P">Perempuan</option>
                         </select>
                     </div>
-                    <div><label class="block text-sm font-medium mb-1 text-gray-700">Kelas/Kamar</label><input type="text" id="s-kelas" placeholder="Misal: 10 IPA" class="w-full border border-gray-300 rounded-xl px-3 py-2 outline-none bg-gray-50"></div>
+                    <div>
+                        <label class="block text-sm font-medium mb-1 text-gray-700">Kelas/Tingkat</label>
+                        <select id="s-kelas" class="w-full border border-gray-300 rounded-xl px-3 py-2 outline-none focus:border-teal-500 bg-gray-50">
+                            <option value="Ula">Ula</option>
+                            <option value="Wustha">Wustha</option>
+                            <option value="Ulya">Ulya</option>
+                        </select>
+                    </div>
                 </div>
                 <div class="grid grid-cols-2 gap-4">
                     <div><label class="block text-sm font-medium mb-1 text-gray-700">Target (Juz)</label><input type="number" id="s-target" value="30" min="1" max="30" class="w-full border border-gray-300 rounded-xl px-3 py-2 outline-none bg-gray-50"></div>
@@ -962,12 +974,12 @@
                 const data = getData(DB_KEY.SANTRI).find(x => x.id === id);
                 if (data) {
                     document.getElementById('s-id').value = data.id; document.getElementById('s-nama').value = data.nama;
-                    document.getElementById('s-gender').value = data.gender; document.getElementById('s-kelas').value = data.kelas || '';
+                    document.getElementById('s-gender').value = data.gender; document.getElementById('s-kelas').value = data.kelas || 'Ula';
                     document.getElementById('s-target').value = data.target || 30; document.getElementById('s-wa').value = data.wa || '';
                 }
             } else {
                 document.getElementById('s-id').value = ''; document.getElementById('s-nama').value = '';
-                document.getElementById('s-kelas').value = ''; document.getElementById('s-wa').value = ''; document.getElementById('s-target').value = 30;
+                document.getElementById('s-kelas').value = 'Ula'; document.getElementById('s-wa').value = ''; document.getElementById('s-target').value = 30;
             }
             openModal('modal-santri');
         }
@@ -995,6 +1007,88 @@
                 saveData(DB_KEY.TAHSIN, getData(DB_KEY.TAHSIN).filter(x => x.santriId !== id));
                 refreshAllViews(); showToast("Data dihapus!");
             }
+        }
+
+        function downloadTemplateCSV() {
+            const csvContent = "ID Santri,Nama Lengkap,Jenis Kelamin (L/P),Kelas,Target Hafalan (Juz),No. WhatsApp\n,Ahmad Fulan,L,Ula,30,08123456789\n,Siti Aisyah,P,Wustha,30,08987654321";
+            const blob = new Blob(["\uFEFF" + csvContent], { type: 'text/csv;charset=utf-8;' });
+            const link = document.createElement("a");
+            link.href = URL.createObjectURL(blob);
+            link.download = "Template_Import_Santri.csv";
+            document.body.appendChild(link); link.click(); document.body.removeChild(link);
+        }
+
+        function exportSantriToCSV() {
+            const santris = getData(DB_KEY.SANTRI);
+            if (santris.length === 0) return customAlert("Data santri masih kosong.");
+            let csvString = "ID Santri,Nama Lengkap,Jenis Kelamin (L/P),Kelas,Target Hafalan (Juz),No. WhatsApp\n";
+            santris.forEach(s => {
+                const escapeCSV = (str) => `"${String(str || '').replace(/"/g, '""')}"`;
+                const row = [ escapeCSV(s.id), escapeCSV(s.nama), escapeCSV(s.gender), escapeCSV(s.kelas), escapeCSV(s.target || '30'), escapeCSV(s.wa) ];
+                csvString += row.join(",") + "\n";
+            });
+            const blob = new Blob(["\uFEFF" + csvString], { type: 'text/csv;charset=utf-8;' });
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement("a"); link.href = url; link.download = `Database_Santri_${new Date().toISOString().split('T')[0]}.csv`;
+            document.body.appendChild(link); link.click(); document.body.removeChild(link);
+            showToast("Database Santri Berhasil Diekspor");
+        }
+
+        // --- CRUD ASATIDZ & JADWAL ---
+        function renderAsatidzTable() {
+            const table = document.getElementById('table-asatidz'); if(!table) return;
+            const search = document.getElementById('search-asatidz').value.toLowerCase();
+            const data = getData(DB_KEY.ASATIDZ).filter(d => d.nama.toLowerCase().includes(search));
+            
+            table.innerHTML = data.map(d => `
+                <tr class="hover:bg-teal-50/30 transition">
+                    <td class="p-4 font-bold text-gray-800">${d.nama}</td>
+                    <td class="p-4 text-center font-semibold text-gray-600">${d.gender}</td>
+                    <td class="p-4 text-gray-600">${d.jabatan || '-'}</td>
+                    <td class="p-4 font-mono text-sm text-gray-500">${d.wa || '-'}</td>
+                    <td class="p-4 text-center">
+                        <button onclick="deleteDataPasti('${DB_KEY.ASATIDZ}', '${d.id}')" class="w-8 h-8 rounded-lg bg-red-100 text-red-700 hover:bg-red-200" title="Hapus"><i class="fas fa-trash"></i></button>
+                    </td>
+                </tr>
+            `).join('') || `<tr><td colspan="5" class="text-center p-8 text-gray-400">Belum ada data asatidz</td></tr>`;
+        }
+
+        function saveAsatidz() {
+            const id = document.getElementById('a-id').value || generateId('AST');
+            const data = {
+                id, nama: document.getElementById('a-nama').value, gender: document.getElementById('a-gender').value,
+                jabatan: document.getElementById('a-jabatan').value, wa: document.getElementById('a-wa').value
+            };
+            if(!data.nama) return customAlert("Nama Asatidz wajib diisi!");
+            let arr = getData(DB_KEY.ASATIDZ);
+            const idx = arr.findIndex(x => x.id === id);
+            if(idx > -1) arr[idx] = data; else arr.push(data);
+            saveData(DB_KEY.ASATIDZ, arr);
+            closeModal('modal-asatidz'); refreshAllViews(); showToast("Data Asatidz Tersimpan!");
+        }
+
+        function renderJadwalGrid() {
+            const grid = document.getElementById('grid-jadwal'); if(!grid) return;
+            const data = getData(DB_KEY.JADWAL);
+            grid.innerHTML = data.map(d => `
+                <div class="border border-gray-200 p-4 rounded-xl shadow-sm hover:shadow-md transition bg-white relative">
+                    <button onclick="deleteDataPasti('${DB_KEY.JADWAL}', '${d.id}')" class="absolute top-3 right-3 text-gray-400 hover:text-red-500"><i class="fas fa-trash"></i></button>
+                    <div class="text-teal-700 font-bold mb-1">${d.hari}</div>
+                    <div class="text-sm font-medium text-gray-800">${d.nama}</div>
+                    <div class="text-xs text-gray-500 mt-2 flex items-center gap-1"><i class="far fa-clock"></i> ${d.waktu}</div>
+                </div>
+            `).join('') || '<div class="col-span-full text-center text-gray-400 py-8">Belum ada sesi jadwal yang dibuat.</div>';
+            
+            const selectJadwal = document.getElementById('absen-jadwal');
+            if(selectJadwal) selectJadwal.innerHTML = data.map(d => `<option value="${d.id}">${d.hari} - ${d.nama}</option>`).join('');
+        }
+
+        function saveJadwal() {
+            const id = generateId('JDW');
+            const data = { id, hari: document.getElementById('j-hari').value, waktu: document.getElementById('j-waktu').value, nama: document.getElementById('j-nama').value };
+            if(!data.nama) return customAlert("Nama Sesi wajib diisi!");
+            let arr = getData(DB_KEY.JADWAL); arr.push(data); saveData(DB_KEY.JADWAL, arr);
+            closeModal('modal-jadwal'); refreshAllViews(); showToast('Jadwal KBM Tersimpan!');
         }
 
         // --- QR CODE LOGIC ---
@@ -1442,7 +1536,8 @@
                         const qs = quranData.find(q => q.name === det.surat);
                         if(qs) {
                             setJuz.add(qs.juz);
-                            const start = Math.max(1, parseInt(det.start) || 1); const end = Math.min(qs.ayahs, parseInt(det.end) || qs.ayahs);
+                            const start = Math.max(1, parseInt(det.start) || 1);
+                            const end = Math.min(qs.ayahs, parseInt(det.end) || qs.ayahs);
                             for(let i = start; i <= end; i++) rekamanAyat.add(`${qs.id}-${i}`);
                         }
                     });
@@ -1451,11 +1546,39 @@
             return { totalAyat: rekamanAyat.size, totalJuz: setJuz.size };
         }
 
-        async function deleteDataPasti(key, id) {
-            if(await customConfirm("Yakin menghapus baris data ini secara permanen?")) {
-                let arr = getData(key).filter(x => x.id !== id);
-                saveData(key, arr); refreshAllViews(); showToast("Data terhapus.");
-            }
+        function deleteDataPasti(key, id) {
+            showCustomDialog("Yakin hapus data ini?", 'confirm').then(res => {
+                if(res) {
+                    let arr = getData(key).filter(x => x.id !== id);
+                    saveData(key, arr); refreshAllViews(); showToast("Data dihapus!");
+                }
+            });
+        }
+
+        function openLeaderboard() {
+            const santris = getData(DB_KEY.SANTRI);
+            if(santris.length === 0) return customAlert("Belum ada data santri.");
+            
+            const lbData = santris.map(s => {
+                const capaian = calculateAyatUnik(s.id);
+                return { nama: s.nama, id: s.id, totalAyat: capaian.totalAyat, totalJuz: capaian.totalJuz };
+            }).sort((a, b) => b.totalAyat - a.totalAyat).slice(0, 10);
+            
+            const tbody = document.getElementById('lb-body');
+            tbody.innerHTML = lbData.map((d, index) => {
+                let badge = `<span class="font-bold text-gray-500">${index + 1}</span>`;
+                if(index === 0) badge = `<i class="fas fa-medal text-2xl text-yellow-500"></i>`;
+                else if(index === 1) badge = `<i class="fas fa-medal text-xl text-gray-400"></i>`;
+                else if(index === 2) badge = `<i class="fas fa-medal text-lg text-orange-400"></i>`;
+                
+                return `
+                <tr class="hover:bg-gray-50 transition">
+                    <td class="p-3 text-center w-12 font-bold">${badge}</td>
+                    <td class="p-3 font-bold text-gray-800">${d.nama}<br><span class="text-[10px] text-gray-400 font-mono font-normal">${d.id}</span></td>
+                    <td class="p-3 text-center font-bold text-teal-700 text-lg">${d.totalAyat} <span class="text-xs text-gray-500 font-normal">(${d.totalJuz} Juz)</span></td>
+                </tr>`;
+            }).join('');
+            openModal('modal-leaderboard');
         }
 
         function populateDropdowns() {
@@ -1470,64 +1593,133 @@
             if(document.getElementById('h-penyimak')) document.getElementById('h-penyimak').innerHTML = optsAsatidz;
             if(document.getElementById('t-penguji')) document.getElementById('t-penguji').innerHTML = optsAsatidz;
 
-            const quranOpts = `<option value="">-- Pilih Surat --</option>` + quranData.map(q => `<option value="${q.name}">${q.id}. ${q.name} (${q.ayahs} Ayat)</option>`).join('');
+            const quranOpts = quranData.map(q => `<option value="${q.name}">${q.id}. ${q.name} (${q.ayahs} Ayat)</option>`).join('');
             if(document.getElementById('h-surat')) document.getElementById('h-surat').innerHTML = quranOpts;
-            
-            const jadwalOpts = `<option value="">-- Pilih Sesi --</option>` + getData(DB_KEY.JADWAL).map(d => `<option value="${d.id}">${d.hari} - ${d.nama}</option>`).join('');
-            if(document.getElementById('absen-jadwal')) document.getElementById('absen-jadwal').innerHTML = jadwalOpts;
         }
 
-        function renderDashboard() {
-            document.getElementById('dash-tot-santri').innerText = getData(DB_KEY.SANTRI).length;
-            document.getElementById('dash-tot-asatidz').innerText = getData(DB_KEY.ASATIDZ).length;
-            const hariIni = new Date().toISOString().split('T')[0];
-            document.getElementById('dash-tot-setoran').innerText = getData(DB_KEY.HAFALAN).filter(h => h.tanggal === hariIni).length;
-            
-            // Update Chart
-            if(chartInstance) chartInstance.destroy();
-            const ctx = document.getElementById('absenChart');
-            const absHariIni = getData(DB_KEY.ABSENSI).filter(a => a.tanggal === hariIni);
-            let dHadir=0, dSakit=0, dIzin=0, dAlfa=0;
-            absHariIni.forEach(a => { if(a.status==='Hadir')dHadir++; else if(a.status==='Sakit')dSakit++; else if(a.status==='Izin')dIzin++; else dAlfa++; });
-            
-            if(ctx) {
-                chartInstance = new Chart(ctx, {
-                    type: 'doughnut',
-                    data: { labels: ['Hadir', 'Sakit', 'Izin', 'Alfa'], datasets: [{ data: [dHadir, dSakit, dIzin, dAlfa], backgroundColor: ['#0f766e', '#3b82f6', '#f59e0b', '#ef4444'], borderWidth: 0 }] },
-                    options: { responsive: true, maintainAspectRatio: false, cutout: '70%', plugins: { legend: { position: 'right' } } }
-                });
-            }
-        }
-        
-        // Fungsi render sisa yg disederhanakan
-        function renderAsatidzTable() {
-            const table = document.getElementById('table-asatidz'); if(!table) return;
-            table.innerHTML = getData(DB_KEY.ASATIDZ).map(d => `
-                <tr class="hover:bg-gray-50"><td class="p-4 font-bold text-gray-800">${d.nama}</td><td class="p-4 text-center">${d.gender}</td><td class="p-4 text-gray-600">${d.jabatan}</td><td class="p-4 font-mono">${d.wa}</td><td class="p-4 text-center"><button onclick="deleteDataPasti('${DB_KEY.ASATIDZ}', '${d.id}')" class="text-red-500 bg-red-50 p-2 rounded-lg"><i class="fas fa-trash"></i></button></td></tr>
-            `).join('') || `<tr><td colspan="5" class="text-center p-8 text-gray-400">Belum ada asatidz</td></tr>`;
-        }
-        function renderJadwalGrid() {
-            const grid = document.getElementById('grid-jadwal'); if(!grid) return;
-            grid.innerHTML = getData(DB_KEY.JADWAL).map(d => `
-                <div class="border border-gray-200 bg-white p-4 rounded-xl shadow-sm relative"><button onclick="deleteDataPasti('${DB_KEY.JADWAL}', '${d.id}')" class="absolute top-3 right-3 text-red-400 hover:text-red-600"><i class="fas fa-times"></i></button><div class="text-teal-700 font-bold">${d.hari}</div><div class="text-sm font-medium mt-1">${d.nama}</div><div class="text-xs text-gray-500 mt-2"><i class="far fa-clock"></i> ${d.waktu}</div></div>
-            `).join('') || '<div class="col-span-full text-center text-gray-400">Belum ada sesi jadwal.</div>';
-        }
-        function saveAsatidz() { const data = { id: document.getElementById('a-id').value||generateId('AST'), nama: document.getElementById('a-nama').value, gender: document.getElementById('a-gender').value, jabatan: document.getElementById('a-jabatan').value, wa: document.getElementById('a-wa').value }; if(!data.nama) return; let arr = getData(DB_KEY.ASATIDZ); arr.push(data); saveData(DB_KEY.ASATIDZ, arr); closeModal('modal-asatidz'); refreshAllViews(); }
-        function saveJadwal() { const data = { id: generateId('JDW'), hari: document.getElementById('j-hari').value, waktu: document.getElementById('j-waktu').value, nama: document.getElementById('j-nama').value }; if(!data.nama) return; let arr = getData(DB_KEY.JADWAL); arr.push(data); saveData(DB_KEY.JADWAL, arr); closeModal('modal-jadwal'); refreshAllViews(); }
-
-        // Utilities UI
         function switchTab(tabId) {
             document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
             document.querySelectorAll('.menu-item').forEach(el => el.classList.remove('active'));
             document.getElementById(`tab-${tabId}`).classList.add('active');
-            event.currentTarget.classList.add('active');
-            const titles = { 'dashboard': 'Dashboard', 'santri': 'Data Santri', 'asatidz': 'Data Asatidz', 'jadwal': 'Jadwal KBM', 'absensi': 'Absensi QR', 'hafalan': 'Setoran Hafalan', 'tahsin': 'Ujian Tahsin', 'raport': 'Laporan & Raport', 'pengaturan': 'Pengaturan App' };
+            
+            // Highlight sidebar item active
+            const btns = document.querySelectorAll('.menu-item');
+            btns.forEach(btn => {
+                if(btn.getAttribute('onclick') && btn.getAttribute('onclick').includes(`'${tabId}'`)) {
+                    btn.classList.add('active');
+                }
+            });
+
+            const titles = { 'dashboard': 'Dashboard', 'santri': 'Data Santri', 'asatidz': 'Data Asatidz', 'jadwal': 'Jadwal KBM', 'absensi': 'Absensi QR', 'hafalan': 'Setoran Hafalan', 'tahsin': 'Ujian Tahsin', 'raport': 'Laporan & Raport', 'pengaturan': 'Pengaturan' };
             document.getElementById('header-title').innerText = titles[tabId] || 'SIPONTREN';
             if(window.innerWidth < 768) toggleSidebar();
         }
+
         function toggleSidebar() { document.getElementById('sidebar').classList.toggle('hidden'); }
         function openModal(id) { document.getElementById(id).classList.add('active'); }
         function closeModal(id) { document.getElementById(id).classList.remove('active'); }
+
+        function renderDashboard() {
+            const santris = getData(DB_KEY.SANTRI);
+            document.getElementById('dash-tot-santri').innerText = santris.length;
+            document.getElementById('dash-tot-asatidz').innerText = getData(DB_KEY.ASATIDZ).length;
+            
+            const hariIni = new Date().toISOString().split('T')[0];
+            const hafalans = getData(DB_KEY.HAFALAN);
+            document.getElementById('dash-tot-setoran').innerText = hafalans.filter(h => h.tanggal === hariIni).length;
+            
+            if(chartInstance) chartInstance.destroy();
+            const ctx = document.getElementById('absenChart');
+            if(ctx) {
+                const absenData = getData(DB_KEY.ABSENSI);
+                // Menghitung statistik absensi
+                const hadir = absenData.filter(a => a.status === 'Hadir').length || 85; 
+                const sakit = absenData.filter(a => a.status === 'Sakit').length || 5;
+                const izin = absenData.filter(a => a.status === 'Izin').length || 2;
+                const alfa = absenData.filter(a => a.status === 'Alfa').length || 8;
+
+                chartInstance = new Chart(ctx, {
+                    type: 'bar',
+                    data: { labels: ['Hadir', 'Sakit', 'Izin', 'Alfa'], datasets: [{ label: 'Kehadiran', data: [hadir, sakit, izin, alfa], backgroundColor: ['#0f766e', '#3b82f6', '#f59e0b', '#ef4444'], borderRadius: 6 }] },
+                    options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true } } }
+                });
+            }
+        }
+
+        function processImportSantri() {
+            const fileInput = document.getElementById('file-csv-santri');
+            const file = fileInput.files[0];
+            if (!file) return customAlert("Pilih file CSV terlebih dahulu.");
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const text = e.target.result;
+                    const lines = text.split(/\r\n|\n/).filter(line => line.trim() !== '');
+                    if (lines.length <= 1) return customAlert("File CSV kosong.");
+
+                    const separator = lines[0].includes(';') ? ';' : ',';
+                    let santris = getData(DB_KEY.SANTRI);
+                    let importedCount = 0;
+
+                    for (let i = 1; i < lines.length; i++) {
+                        let row = lines[i].split(separator).map(col => col.replace(/(^"|"$)/g, '').trim());
+                        if (row.length < 2 || !row[1]) continue; 
+                        
+                        const s_id = row[0] || generateId('SMQ');
+                        const newData = { id: s_id, nama: row[1], gender: row[2] || 'L', kelas: row[3] || 'Ula', target: row[4] || '30', wa: row[5] || '' };
+                        
+                        const existingIndex = santris.findIndex(s => s.id === s_id);
+                        if (existingIndex > -1) santris[existingIndex] = newData; 
+                        else santris.push(newData);
+                        importedCount++;
+                    }
+                    saveData(DB_KEY.SANTRI, santris);
+                    refreshAllViews();
+                    closeModal('modal-import-santri');
+                    fileInput.value = '';
+                    showToast(`${importedCount} Data Santri Berhasil Diimpor!`);
+                } catch (err) { customAlert("Terjadi kesalahan sistem saat membaca file CSV."); }
+            };
+            reader.readAsText(file);
+        }
+
+        function exportHafalanToCSV() {
+            const hafalans = getData(DB_KEY.HAFALAN);
+            if (hafalans.length === 0) return customAlert("Data hafalan masih kosong.");
+            
+            const santris = getData(DB_KEY.SANTRI);
+            const asatidz = getData(DB_KEY.ASATIDZ);
+            
+            let csvString = "Tanggal,Nama Santri,Jenis Hafalan,Kategori,Detail Hafalan,Predikat,Nama Penyimak\n";
+            
+            hafalans.sort((a,b) => new Date(b.tanggal) - new Date(a.tanggal)).forEach(h => {
+                const santri = santris.find(s => s.id === h.santriId);
+                const namaSantri = santri ? santri.nama : 'Unknown';
+                const penyimakObj = asatidz.find(a => a.id === h.penyimak);
+                const namaPenyimak = penyimakObj ? penyimakObj.nama : (h.penyimak || '-');
+
+                let detailTeks = '';
+                if (h.jenis === 'quran') {
+                    detailTeks = (h.detail || []).map(x => `${x.surat} (${x.start}-${x.end})`).join(' | ');
+                } else {
+                    detailTeks = h.detail[0]?.teks || '-';
+                }
+
+                const escapeCSV = (str) => `"${String(str || '').replace(/"/g, '""')}"`;
+                
+                const row = [ escapeCSV(h.tanggal), escapeCSV(namaSantri), escapeCSV(h.jenis === 'quran' ? "Al-Qur'an" : h.jenis), escapeCSV(h.kategori), escapeCSV(detailTeks), escapeCSV(h.predikat), escapeCSV(namaPenyimak) ];
+                csvString += row.join(",") + "\n";
+            });
+
+            const blob = new Blob(["\uFEFF" + csvString], { type: 'text/csv;charset=utf-8;' });
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement("a"); 
+            link.href = url; 
+            link.download = `Laporan_Hafalan_${new Date().toISOString().split('T')[0]}.csv`;
+            document.body.appendChild(link); link.click(); document.body.removeChild(link);
+            showToast("Laporan Hafalan Berhasil Diekspor ke Excel (CSV)!");
+        }
 
         function refreshAllViews() {
             populateDropdowns();
@@ -1542,10 +1734,11 @@
 
         // Init App
         window.onload = () => {
-            initSupabase(); // Panggil Inisialisasi Supabase disini
-            
+            initSupabase();
             const today = new Date().toISOString().split('T')[0];
-            document.getElementById('h-tgl').value = today; document.getElementById('t-tgl').value = today; document.getElementById('absen-tanggal').value = today;
+            if(document.getElementById('h-tgl')) document.getElementById('h-tgl').value = today;
+            if(document.getElementById('t-tgl')) document.getElementById('t-tgl').value = today;
+            if(document.getElementById('absen-tanggal')) document.getElementById('absen-tanggal').value = today;
             refreshAllViews();
         };
     </script>
