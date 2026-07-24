@@ -57,6 +57,30 @@
 </head>
 <body class="text-gray-800 antialiased overflow-hidden flex h-screen">
     
+    <!-- Login Screen Overlay -->
+    <div id="login-screen" class="fixed inset-0 bg-gradient-to-br from-teal-800 to-teal-950 z-[9999] flex items-center justify-center p-4 transition-opacity duration-300">
+        <div class="bg-white rounded-3xl p-8 w-full max-w-sm shadow-2xl text-center">
+            <div class="w-20 h-20 bg-teal-50 rounded-2xl mx-auto mb-4 flex items-center justify-center shadow-inner p-2">
+                <img src="logo-pesantren-192.png" id="login-logo" class="w-full h-full object-contain">
+            </div>
+            <h2 class="text-2xl font-extrabold text-gray-800 mb-1" id="login-title">SIPONTREN</h2>
+            <p class="text-gray-500 text-sm mb-8 font-medium">Sistem Informasi Pondok Pesantren</p>
+            
+            <div class="text-left mb-6">
+                <label class="block text-sm font-bold text-gray-700 mb-2">Kata Sandi (Password Akses)</label>
+                <div class="relative">
+                    <i class="fas fa-lock absolute left-4 top-3.5 text-gray-400"></i>
+                    <input type="password" id="login-password" onkeypress="if(event.key === 'Enter') doLogin()" placeholder="Masukkan password..." class="w-full bg-gray-50 border border-gray-200 rounded-xl py-3 pl-11 pr-4 focus:ring-2 focus:ring-teal-500 outline-none transition font-medium">
+                </div>
+            </div>
+            
+            <button onclick="doLogin()" class="w-full bg-teal-600 hover:bg-teal-700 text-white font-bold py-3.5 rounded-xl transition shadow-lg flex items-center justify-center gap-2">
+                <i class="fas fa-sign-in-alt"></i> Masuk Aplikasi
+            </button>
+            <p class="text-xs text-gray-400 mt-6 bg-gray-50 py-2 rounded-lg border border-gray-100">Default password: <b class="text-gray-600">admin123</b></p>
+        </div>
+    </div>
+
     <!-- Sidebar -->
     <aside class="w-64 bg-teal-800 text-white flex flex-col h-screen shrink-0 transition-all duration-300 shadow-2xl z-20 hidden md:flex" id="sidebar">
         <div class="p-6 flex items-center gap-3 border-b border-teal-700/50">
@@ -94,12 +118,12 @@
             </button>
             <button onclick="switchTab('raport')" class="menu-item w-full flex items-center gap-3 px-4 py-3 text-teal-50 hover:bg-teal-700/50 rounded-xl text-left">
                 <i class="fas fa-file-signature w-5 text-center"></i><span class="font-medium">Laporan & Raport</span>
-            </button>
-        </nav>
-        
-        <div class="p-4 border-t border-teal-700/50">
+        <div class="p-4 border-t border-teal-700/50 space-y-2">
             <button onclick="switchTab('pengaturan')" class="w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-teal-900 hover:bg-teal-950 text-white rounded-xl text-sm font-semibold transition">
                 <i class="fas fa-cog"></i> Pengaturan
+            </button>
+            <button onclick="doLogout()" class="w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-red-900/40 hover:bg-red-800 text-red-100 rounded-xl text-sm font-semibold transition">
+                <i class="fas fa-sign-out-alt"></i> Keluar
             </button>
         </div>
     </aside>
@@ -505,6 +529,12 @@
                                 <input type="text" id="setting-nama" class="w-full border border-gray-300 rounded-xl px-4 py-2.5 outline-none focus:ring-2 focus:ring-teal-500" placeholder="Misal: Pesantren Al-Hikmah">
                                 <p class="text-[11px] text-gray-500 mt-1">Nama ini akan digunakan pada kop Raport dan nama App saat diinstall.</p>
                             </div>
+
+                            <div>
+                                <label class="block text-sm font-bold text-teal-800 mb-1">Ubah Password Login (Akses Ustadz)</label>
+                                <input type="text" id="setting-password" class="w-full border border-teal-300 bg-teal-50 rounded-xl px-4 py-2.5 outline-none focus:ring-2 focus:ring-teal-500 font-medium" placeholder="Default: admin123">
+                                <p class="text-[11px] text-gray-500 mt-1">Password ini akan digunakan bersama oleh seluruh ustadz untuk masuk ke SIPONTREN.</p>
+                            </div>
                             
                             <div>
                                 <label class="block text-sm font-medium text-gray-700 mb-1">Logo Lembaga (URL Gambar / Base64)</label>
@@ -831,6 +861,52 @@
         }
         function generateId(prefix) { return `${prefix}-${Date.now().toString().slice(-6)}`; }
 
+        // --- SISTEM LOGIN & OTENTIKASI ---
+        function checkAuthAndInit() {
+            const isLoggedIn = sessionStorage.getItem('sipontren_logged_in') === 'true';
+            const loginScreen = document.getElementById('login-screen');
+            
+            if (isLoggedIn) {
+                // Sembunyikan layar login dan mulai inisialisasi aplikasi
+                loginScreen.classList.add('hidden');
+                initApp();
+            } else {
+                // Tampilkan layar login
+                loginScreen.classList.remove('hidden');
+                
+                // Perbarui logo dan nama pesantren di layar login jika sudah disetting
+                let config = getData(DB_KEY.SETTING);
+                if (config && config.nama) {
+                    document.getElementById('login-title').innerText = config.nama;
+                    document.getElementById('login-logo').src = config.logo || DEFAULT_LOGO;
+                }
+            }
+        }
+
+        function doLogin() {
+            const pass = document.getElementById('login-password').value;
+            let config = getData(DB_KEY.SETTING);
+            const validPass = (config && config.password) ? config.password : 'admin123';
+            
+            if (pass === validPass) {
+                sessionStorage.setItem('sipontren_logged_in', 'true');
+                document.getElementById('login-password').value = ''; // bersihkan input
+                showToast("Berhasil masuk. Selamat datang!");
+                checkAuthAndInit();
+            } else {
+                showToast("Password yang Anda masukkan salah!", true);
+            }
+        }
+
+        function doLogout() {
+            customConfirm("Yakin ingin keluar dan mengunci aplikasi?").then(res => {
+                if (res) {
+                    sessionStorage.removeItem('sipontren_logged_in');
+                    window.location.reload(); // Muat ulang halaman untuk kembali ke layar login
+                }
+            });
+        }
+
         // --- CUSTOM DIALOGS PENGGANTI ALERT BROWSER ---
         function showCustomDialog(message, type = 'alert') {
             return new Promise((resolve) => {
@@ -881,17 +957,23 @@
         // --- PENGATURAN & PWA IDENTITY ---
         function muatPengaturan() {
             let config = getData(DB_KEY.SETTING);
-            if(!config || !config.nama) config = { nama: DEFAULT_NAMA, logo: DEFAULT_LOGO };
+            if(!config || !config.nama) config = { nama: DEFAULT_NAMA, logo: DEFAULT_LOGO, password: 'admin123' };
             if(!config.logo) config.logo = DEFAULT_LOGO;
+            if(!config.password) config.password = 'admin123';
             
-            // Terapkan ke UI Sidebar
+            // Terapkan ke UI Sidebar & Login Screen
             document.getElementById('sidebar-title').innerText = config.nama;
             document.getElementById('sidebar-logo').src = config.logo;
+            document.getElementById('login-title').innerText = config.nama;
+            document.getElementById('login-logo').src = config.logo;
             
             // Terapkan ke UI Form Pengaturan
             const inputNama = document.getElementById('setting-nama');
+            const inputPass = document.getElementById('setting-password');
             const inputLogo = document.getElementById('setting-logo-preview');
+            
             if(inputNama) inputNama.value = config.nama;
+            if(inputPass) inputPass.value = config.password;
             if(inputLogo) inputLogo.src = config.logo;
 
             // Generate Manifest Dinamis
@@ -943,14 +1025,16 @@
 
         function simpanPengaturan() {
             const nama = document.getElementById('setting-nama').value || DEFAULT_NAMA;
+            const password = document.getElementById('setting-password').value || 'admin123';
             let logo = document.getElementById('setting-logo-url').value;
+            
             if(tempBase64Logo && !logo) logo = tempBase64Logo; // Prioritas file upload
             if(!logo) logo = DEFAULT_LOGO;
 
-            const config = { nama, logo };
+            const config = { nama, logo, password };
             saveData(DB_KEY.SETTING, config);
             muatPengaturan();
-            showToast("Pengaturan Identitas & Logo PWA Berhasil Disimpan!");
+            showToast("Pengaturan Berhasil Disimpan!");
         }
 
         async function hapusCacheLokal() {
@@ -1814,13 +1898,18 @@
         }
 
         // Init App
-        window.onload = () => {
+        function initApp() {
             initSupabase();
+            refreshAllViews();
             const today = new Date().toISOString().split('T')[0];
             if(document.getElementById('h-tgl')) document.getElementById('h-tgl').value = today;
             if(document.getElementById('t-tgl')) document.getElementById('t-tgl').value = today;
             if(document.getElementById('absen-tanggal')) document.getElementById('absen-tanggal').value = today;
-            refreshAllViews();
+        }
+
+        window.onload = () => {
+            // Cek otentikasi saat aplikasi dimuat pertama kali
+            checkAuthAndInit();
         };
     </script>
 </body>
