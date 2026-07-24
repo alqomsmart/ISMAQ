@@ -901,16 +901,26 @@
             document.title = config.nama;
             document.getElementById('dynamic-favicon').href = config.logo;
             
+            // Konversi path relatif menjadi absolute agar terbaca oleh PWA Installer dari Data URI
+            const currentUrl = window.location.href.split('?')[0].split('#')[0];
+            const baseUrl = currentUrl.substring(0, currentUrl.lastIndexOf('/') + 1) || currentUrl;
+            
+            let iconUrl = config.logo;
+            // Jika logo berupa file lokal (bukan URL http/https atau base64), jadikan absolute URL
+            if (!iconUrl.startsWith('http') && !iconUrl.startsWith('data:')) {
+                iconUrl = baseUrl + iconUrl;
+            }
+            
             const manifestData = {
                 name: config.nama, 
-                short_name: config.nama.length > 12 ? config.nama.substring(0, 12) + "..." : config.nama, 
-                start_url: ".", 
+                short_name: config.nama.length > 15 ? config.nama.substring(0, 15) : config.nama, 
+                start_url: currentUrl, 
                 display: "standalone",
                 background_color: "#f3f4f6", 
                 theme_color: "#0f766e",
                 icons: [
-                    { src: config.logo, sizes: "192x192", type: "image/png", purpose: "any maskable" },
-                    { src: config.logo, sizes: "512x512", type: "image/png", purpose: "any maskable" }
+                    { src: iconUrl, sizes: "192x192", type: "image/png", purpose: "any" },
+                    { src: iconUrl, sizes: "512x512", type: "image/png", purpose: "maskable" }
                 ]
             };
             const stringManifest = encodeURIComponent(JSON.stringify(manifestData));
@@ -1231,10 +1241,30 @@
                 return `
                 <tr class="hover:bg-gray-50 transition">
                     <td class="p-3 pl-5 text-gray-800 font-bold text-sm">${s.nama} <br><span class="text-[10px] text-gray-400 font-mono font-normal">${s.id}</span></td>
-                    <td class="p-3 text-center"><input type="radio" name="abs-${s.id}" value="Hadir" ${stat==='Hadir'?'checked':''} class="w-4 h-4 text-teal-600 cursor-pointer"></td>
-                    <td class="p-3 text-center"><input type="radio" name="abs-${s.id}" value="Sakit" ${stat==='Sakit'?'checked':''} class="w-4 h-4 text-blue-600 cursor-pointer"></td>
-                    <td class="p-3 text-center"><input type="radio" name="abs-${s.id}" value="Izin" ${stat==='Izin'?'checked':''} class="w-4 h-4 text-yellow-500 cursor-pointer"></td>
-                    <td class="p-3 text-center"><input type="radio" name="abs-${s.id}" value="Alfa" ${stat==='Alfa'?'checked':''} class="w-4 h-4 text-red-600 cursor-pointer"></td>
+                    <td class="p-3 text-center">
+                        <label class="inline-flex items-center justify-center gap-1 cursor-pointer">
+                            <input type="radio" name="abs-${s.id}" value="Hadir" ${stat==='Hadir'?'checked':''} class="w-4 h-4 text-teal-600 cursor-pointer">
+                            <span class="text-xs font-bold text-teal-700">H</span>
+                        </label>
+                    </td>
+                    <td class="p-3 text-center">
+                        <label class="inline-flex items-center justify-center gap-1 cursor-pointer">
+                            <input type="radio" name="abs-${s.id}" value="Sakit" ${stat==='Sakit'?'checked':''} class="w-4 h-4 text-blue-600 cursor-pointer">
+                            <span class="text-xs font-bold text-blue-700">S</span>
+                        </label>
+                    </td>
+                    <td class="p-3 text-center">
+                        <label class="inline-flex items-center justify-center gap-1 cursor-pointer">
+                            <input type="radio" name="abs-${s.id}" value="Izin" ${stat==='Izin'?'checked':''} class="w-4 h-4 text-yellow-500 cursor-pointer">
+                            <span class="text-xs font-bold text-yellow-600">I</span>
+                        </label>
+                    </td>
+                    <td class="p-3 text-center">
+                        <label class="inline-flex items-center justify-center gap-1 cursor-pointer">
+                            <input type="radio" name="abs-${s.id}" value="Alfa" ${stat==='Alfa'?'checked':''} class="w-4 h-4 text-red-600 cursor-pointer">
+                            <span class="text-xs font-bold text-red-700">A</span>
+                        </label>
+                    </td>
                     <td class="p-3 text-center">
                         <button onclick="kirimWAAbsensi('${s.id}')" class="bg-green-50 hover:bg-green-100 text-green-700 border border-green-200 px-3 py-1.5 rounded-lg text-xs font-bold transition flex items-center justify-center gap-1 mx-auto shadow-sm">
                             <i class="fab fa-whatsapp"></i> Kabari
