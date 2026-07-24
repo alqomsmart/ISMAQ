@@ -995,45 +995,47 @@
         function updateManifest(config) {
             document.title = config.nama;
             
-            // Konversi path relatif menjadi absolute agar terbaca oleh PWA Installer HP
             const currentUrl = window.location.href.split('?')[0].split('#')[0];
             const baseUrl = currentUrl.substring(0, currentUrl.lastIndexOf('/') + 1) || currentUrl;
             
             let iconUrl = config.logo;
+            // Jadikan Absolute URL jika bukan format http atau base64
             if (!iconUrl.startsWith('http') && !iconUrl.startsWith('data:')) {
                 iconUrl = baseUrl + iconUrl;
             }
             
-            // Update Favicon & Apple Icon
+            // Update Favicon & Meta
             document.getElementById('dynamic-favicon').href = iconUrl;
             const appleIcon = document.getElementById('apple-touch-icon');
             if(appleIcon) appleIcon.href = iconUrl;
             
+            // Format PWA
             const manifestData = {
                 name: config.nama, 
-                short_name: config.nama.length > 15 ? config.nama.substring(0, 15) : config.nama, 
+                short_name: config.nama.length > 12 ? config.nama.substring(0, 12) : config.nama, 
                 start_url: currentUrl, 
                 display: "standalone",
                 background_color: "#f3f4f6", 
                 theme_color: "#0f766e",
                 icons: [
                     { src: iconUrl, sizes: "192x192", type: "image/png", purpose: "any" },
-                    { src: iconUrl, sizes: "512x512", type: "image/png", purpose: "maskable" }
+                    { src: iconUrl, sizes: "512x512", type: "image/png", purpose: "maskable" },
+                    { src: iconUrl, sizes: "any", type: "image/png" } // Fallback ampuh untuk Android
                 ]
             };
             
-            // Hapus manifest lama agar browser mobile membaca ulang perubahannya
+            // Hapus yang lama
             const oldManifest = document.getElementById('dynamic-manifest');
             if (oldManifest) oldManifest.remove();
             
-            // Buat manifest baru menggunakan metode Blob (Lebih stabil di HP dibanding Data URI)
-            const blob = new Blob([JSON.stringify(manifestData)], { type: 'application/manifest+json' });
-            const manifestUrl = URL.createObjectURL(blob);
+            // Buat Manifest menggunakan Full Base64 Encoding (Paling stabil di Android)
+            const manifestString = JSON.stringify(manifestData);
+            const encodedManifest = 'data:application/manifest+json;base64,' + btoa(unescape(encodeURIComponent(manifestString)));
             
             const newManifest = document.createElement('link');
             newManifest.rel = 'manifest';
             newManifest.id = 'dynamic-manifest';
-            newManifest.href = manifestUrl;
+            newManifest.href = encodedManifest;
             document.head.appendChild(newManifest);
         }
 
