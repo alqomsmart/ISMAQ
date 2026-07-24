@@ -157,7 +157,7 @@
                                 <i class="fas fa-camera text-2xl text-gray-400 group-hover:text-teal-600"></i>
                                 <span class="text-sm font-semibold text-gray-600 group-hover:text-teal-700">Scan QR Presensi</span>
                             </button>
-                            <button onclick="switchTab('hafalan'); setTimeout(()=>openModal('modal-hafalan'), 100)" class="p-4 bg-gray-50 hover:bg-teal-50 border border-gray-100 rounded-xl flex flex-col items-center justify-center gap-2 transition group">
+                            <button onclick="switchTab('hafalan'); setTimeout(()=>openModalHafalanBaru(), 100)" class="p-4 bg-gray-50 hover:bg-teal-50 border border-gray-100 rounded-xl flex flex-col items-center justify-center gap-2 transition group">
                                 <i class="fas fa-microphone text-2xl text-gray-400 group-hover:text-teal-600"></i>
                                 <span class="text-sm font-semibold text-gray-600 group-hover:text-teal-700">Input Setoran</span>
                             </button>
@@ -330,7 +330,7 @@
                             <button onclick="exportHafalanToCSV()" class="w-full sm:w-auto bg-gray-600 hover:bg-gray-700 text-white px-4 py-2.5 rounded-xl font-semibold text-sm transition flex items-center justify-center gap-2 shadow-sm">
                                 <i class="fas fa-file-export"></i> Export
                             </button>
-                            <button onclick="openModal('modal-hafalan')" class="w-full sm:w-auto bg-teal-600 hover:bg-teal-700 text-white px-5 py-2.5 rounded-xl font-semibold text-sm transition shadow-sm flex items-center justify-center gap-2">
+                            <button onclick="openModalHafalanBaru()" class="w-full sm:w-auto bg-teal-600 hover:bg-teal-700 text-white px-5 py-2.5 rounded-xl font-semibold text-sm transition shadow-sm flex items-center justify-center gap-2">
                                 <i class="fas fa-plus"></i> Input Setoran
                             </button>
                         </div>
@@ -629,6 +629,7 @@
                 <button onclick="closeModal('modal-hafalan')" class="text-gray-400 hover:text-red-500 bg-gray-200 hover:bg-red-100 rounded-full w-8 h-8 flex items-center justify-center transition"><i class="fas fa-times"></i></button>
             </div>
             <div class="p-6 space-y-4 overflow-y-auto flex-1 bg-white">
+                <input type="hidden" id="h-id">
                 <div class="grid grid-cols-2 gap-4">
                     <div><label class="block text-sm font-medium mb-1 text-gray-700">Tanggal</label><input type="date" id="h-tgl" class="w-full border border-gray-300 rounded-xl px-3 py-2 outline-none bg-gray-50"></div>
                     <div><label class="block text-sm font-medium mb-1 text-gray-700">Kategori</label>
@@ -1356,6 +1357,47 @@
             ).join('');
         }
 
+        function openModalHafalanBaru() {
+            document.getElementById('h-id').value = '';
+            document.getElementById('h-tgl').value = new Date().toISOString().split('T')[0];
+            document.getElementById('h-kategori').value = 'Ziyadah';
+            document.getElementById('h-santri').value = '';
+            document.getElementById('h-jenis').value = 'quran';
+            document.getElementById('h-penyimak').value = '';
+            document.getElementById('h-predikat').value = 'Mumtaz';
+            
+            tempHafalanQuran = [];
+            renderHafalanDetailList();
+            document.getElementById('h-teks-bebas').value = '';
+            toggleInputHafalan();
+            
+            openModal('modal-hafalan');
+        }
+
+        function editHafalan(id) {
+            const data = getData(DB_KEY.HAFALAN).find(x => x.id === id);
+            if (!data) return customAlert("Data tidak ditemukan!");
+
+            document.getElementById('h-id').value = data.id;
+            document.getElementById('h-tgl').value = data.tanggal;
+            document.getElementById('h-kategori').value = data.kategori;
+            document.getElementById('h-santri').value = data.santriId;
+            document.getElementById('h-jenis').value = data.jenis || 'quran';
+            document.getElementById('h-penyimak').value = data.penyimak;
+            document.getElementById('h-predikat').value = data.predikat;
+
+            toggleInputHafalan();
+
+            if (data.jenis === 'quran') {
+                tempHafalanQuran = [...(data.detail || [])];
+                renderHafalanDetailList();
+            } else {
+                document.getElementById('h-teks-bebas').value = data.detail[0]?.teks || '';
+            }
+
+            openModal('modal-hafalan');
+        }
+
         function saveHafalan() {
             const santriId = document.getElementById('h-santri').value;
             if(!santriId) return customAlert('Pilih Santri terlebih dahulu!');
@@ -1365,21 +1407,29 @@
             
             if(jenis === 'quran') {
                 if(tempHafalanQuran.length === 0) return customAlert('Tambahkan detail ayat (Tekan tombol + Tambah Surat)!');
-                detailData = tempHafalanQuran;
+                detailData = [...tempHafalanQuran];
             } else {
                 const teks = document.getElementById('h-teks-bebas').value;
                 if(!teks) return customAlert('Isi detail hafalan pada kolom teks!');
                 detailData = [{ teks: teks }]; // Simpan sebagai array object agar seragam parsingnya
             }
 
+            const id = document.getElementById('h-id').value || generateId('HFL');
             const data = {
-                id: generateId('HFL'), tanggal: document.getElementById('h-tgl').value, 
+                id: id, tanggal: document.getElementById('h-tgl').value, 
                 kategori: document.getElementById('h-kategori').value, jenis: jenis,
                 santriId: santriId, detail: detailData, 
                 penyimak: document.getElementById('h-penyimak').value, predikat: document.getElementById('h-predikat').value
             };
             
-            let arr = getData(DB_KEY.HAFALAN); arr.push(data); saveData(DB_KEY.HAFALAN, arr);
+            let arr = getData(DB_KEY.HAFALAN); 
+            const idx = arr.findIndex(x => x.id === id);
+            if(idx > -1) {
+                arr[idx] = data;
+            } else {
+                arr.push(data);
+            }
+            saveData(DB_KEY.HAFALAN, arr);
             
             tempHafalanQuran = []; renderHafalanDetailList(); document.getElementById('h-teks-bebas').value = '';
             closeModal('modal-hafalan'); refreshAllViews(); showToast('Setoran Hafalan Berhasil Disimpan!');
@@ -1415,7 +1465,8 @@
                     <td class="p-4 text-sm">${detailTeks}</td>
                     <td class="p-4 text-center"><span class="px-3 py-1 rounded-lg text-xs font-bold ${color}">${d.predikat}</span></td>
                     <td class="p-4 text-center">
-                        <button onclick="deleteDataPasti('${DB_KEY.HAFALAN}', '${d.id}')" class="text-red-500 hover:text-red-700 bg-red-50 w-8 h-8 rounded-lg"><i class="fas fa-trash"></i></button>
+                        <button onclick="editHafalan('${d.id}')" class="text-blue-500 hover:text-blue-700 bg-blue-50 w-8 h-8 rounded-lg mr-1" title="Edit"><i class="fas fa-edit"></i></button>
+                        <button onclick="deleteDataPasti('${DB_KEY.HAFALAN}', '${d.id}')" class="text-red-500 hover:text-red-700 bg-red-50 w-8 h-8 rounded-lg" title="Hapus"><i class="fas fa-trash"></i></button>
                     </td>
                 </tr>`;
             }).join('') || `<tr><td colspan="6" class="text-center p-8 text-gray-400">Belum ada setoran sesuai filter.</td></tr>`;
