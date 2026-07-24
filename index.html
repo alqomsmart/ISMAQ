@@ -3,14 +3,17 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title id="app-title">SIPONTREN - Sistem Informasi Pondok Pesantren</title>
+    <title>SIPONTREN - Sistem Informasi Pondok Pesantren</title>
     
-    <!-- PWA Identity Tags (Dynamic) -->
+    <!-- PWA Identity Tags (Dynamic & Apple Support) -->
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <link rel="apple-touch-icon" id="apple-touch-icon" href="logo-pesantren-192.png">
+    
     <link rel="icon" id="dynamic-favicon" href="logo-pesantren-192.png">
     <link rel="manifest" id="dynamic-manifest">
     <meta name="theme-color" content="#0f766e">
 
-    <!-- Tailwind & Icons -->
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     
@@ -971,17 +974,13 @@
         // --- PENGATURAN & PWA IDENTITY ---
         function muatPengaturan() {
             let config = getData(DB_KEY.SETTING);
-            if(!config || !config.nama) config = { nama: DEFAULT_NAMA, logo: DEFAULT_LOGO, password: 'admin123' };
-            if(!config.logo) config.logo = DEFAULT_LOGO;
+            if(!config || !config.nama) config = { nama: 'Santri Mujahid Al Qomariah', logo: 'logo-pesantren-192.png', password: 'admin123' };
+            if(!config.logo) config.logo = 'logo-pesantren-192.png';
             if(!config.password) config.password = 'admin123';
             
-            // Terapkan ke UI Sidebar & Login Screen
             document.getElementById('sidebar-title').innerText = config.nama;
             document.getElementById('sidebar-logo').src = config.logo;
-            document.getElementById('login-title').innerText = config.nama;
-            document.getElementById('login-logo').src = config.logo;
             
-            // Terapkan ke UI Form Pengaturan
             const inputNama = document.getElementById('setting-nama');
             const inputPass = document.getElementById('setting-password');
             const inputLogo = document.getElementById('setting-logo-preview');
@@ -990,23 +989,25 @@
             if(inputPass) inputPass.value = config.password;
             if(inputLogo) inputLogo.src = config.logo;
 
-            // Generate Manifest Dinamis
             updateManifest(config);
         }
 
         function updateManifest(config) {
             document.title = config.nama;
-            document.getElementById('dynamic-favicon').href = config.logo;
             
-            // Konversi path relatif menjadi absolute agar terbaca oleh PWA Installer dari Data URI
+            // Konversi path relatif menjadi absolute agar terbaca oleh PWA Installer HP
             const currentUrl = window.location.href.split('?')[0].split('#')[0];
             const baseUrl = currentUrl.substring(0, currentUrl.lastIndexOf('/') + 1) || currentUrl;
             
             let iconUrl = config.logo;
-            // Jika logo berupa file lokal (bukan URL http/https atau base64), jadikan absolute URL
             if (!iconUrl.startsWith('http') && !iconUrl.startsWith('data:')) {
                 iconUrl = baseUrl + iconUrl;
             }
+            
+            // Update Favicon & Apple Icon
+            document.getElementById('dynamic-favicon').href = iconUrl;
+            const appleIcon = document.getElementById('apple-touch-icon');
+            if(appleIcon) appleIcon.href = iconUrl;
             
             const manifestData = {
                 name: config.nama, 
@@ -1020,8 +1021,20 @@
                     { src: iconUrl, sizes: "512x512", type: "image/png", purpose: "maskable" }
                 ]
             };
-            const stringManifest = encodeURIComponent(JSON.stringify(manifestData));
-            document.getElementById('dynamic-manifest').href = 'data:application/manifest+json;charset=utf-8,' + stringManifest;
+            
+            // Hapus manifest lama agar browser mobile membaca ulang perubahannya
+            const oldManifest = document.getElementById('dynamic-manifest');
+            if (oldManifest) oldManifest.remove();
+            
+            // Buat manifest baru menggunakan metode Blob (Lebih stabil di HP dibanding Data URI)
+            const blob = new Blob([JSON.stringify(manifestData)], { type: 'application/manifest+json' });
+            const manifestUrl = URL.createObjectURL(blob);
+            
+            const newManifest = document.createElement('link');
+            newManifest.rel = 'manifest';
+            newManifest.id = 'dynamic-manifest';
+            newManifest.href = manifestUrl;
+            document.head.appendChild(newManifest);
         }
 
         let tempBase64Logo = null;
