@@ -108,7 +108,7 @@
                 <i class="fas fa-sign-in-alt text-[#d4af37]"></i> Masuk Aplikasi
             </button>
 
-            <p class="mt-8 text-[10px] text-gray-400 font-semibold tracking-wider uppercase">Created by : Qosym-AbuAlfinza-2026</p>
+            <p class="mt-8 text-[10px] text-gray-400 font-semibold tracking-wider uppercase">Created by : Abu-Alfinza-2026</p>
         </div>
     </div>
 
@@ -417,10 +417,25 @@
             <section id="tab-tahsin" class="tab-content">
                 <div class="glass-card rounded-3xl overflow-hidden flex flex-col border border-[#d4af37]/20">
                     <div class="p-6 border-b border-gray-100 bg-white/50 flex flex-col sm:flex-row justify-between items-center gap-4">
-                        <h3 class="font-extrabold text-[#0b4d46] text-lg flex items-center gap-2"><i class="fas fa-quran text-[#d4af37]"></i> Log Ujian Tahsin</h3>
-                        <button onclick="openModalTahsin()" class="w-full sm:w-auto bg-[#0b4d46] hover:bg-[#083b35] text-white px-6 py-2.5 rounded-xl font-bold text-sm transition shadow-md border border-[#d4af37]/30">
-                            <i class="fas fa-plus text-[#d4af37] mr-2"></i> Input Nilai Ujian
-                        </button>
+                        <div class="flex flex-col sm:flex-row gap-4 items-center w-full sm:w-auto">
+                            <h3 class="font-extrabold text-[#0b4d46] text-lg flex items-center gap-2"><i class="fas fa-quran text-[#d4af37]"></i> Log Ujian Tahsin</h3>
+                            <select id="filter-predikat-tahsin" class="border border-gray-200 rounded-xl px-4 py-2.5 text-sm outline-none focus:ring-2 focus:ring-[#d4af37] focus:border-[#d4af37] bg-white/80 font-bold text-[#0b4d46] w-full sm:w-auto shadow-sm" onchange="renderTahsinTable()">
+                                <option value="">Tampilkan Semua Predikat</option>
+                                <option value="Mumtaz">Kategori: Mumtaz (A)</option>
+                                <option value="Jayyid Jiddan">Kategori: Jayyid Jiddan (B)</option>
+                                <option value="Jayyid">Kategori: Jayyid (C)</option>
+                                <option value="Maqbul">Kategori: Maqbul (D)</option>
+                                <option value="Rasib">Kategori: Rasib (Ulang)</option>
+                            </select>
+                        </div>
+                        <div class="flex flex-col sm:flex-row gap-3 w-full sm:w-auto">
+                            <button onclick="exportTahsinToCSV()" class="w-full sm:w-auto bg-gray-100 hover:bg-gray-200 text-gray-700 px-5 py-2.5 rounded-xl font-bold text-sm transition flex items-center justify-center gap-2 border border-gray-200 shadow-sm">
+                                <i class="fas fa-file-export text-[#d4af37]"></i> Export
+                            </button>
+                            <button onclick="openModalTahsin()" class="w-full sm:w-auto bg-[#0b4d46] hover:bg-[#083b35] text-white px-6 py-2.5 rounded-xl font-bold text-sm transition shadow-md border border-[#d4af37]/30">
+                                <i class="fas fa-plus text-[#d4af37] mr-2"></i> Input Nilai Ujian
+                            </button>
+                        </div>
                     </div>
                     <div class="overflow-x-auto bg-white/60">
                         <table class="w-full text-left border-collapse">
@@ -430,7 +445,7 @@
                                     <th class="p-5 font-black">Santri</th>
                                     <th class="p-5 font-black">Penguji</th>
                                     <th class="p-5 font-black text-center">Rata-rata</th>
-                                    <th class="p-5 font-black text-center">Predikat</th>
+                                    <th class="p-5 font-black text-center">Klasifikasi & Predikat</th>
                                     <th class="p-5 font-black text-center">Aksi</th>
                                 </tr>
                             </thead>
@@ -756,6 +771,7 @@
                 <button onclick="closeModal('modal-tahsin')" class="text-white/70 hover:text-white bg-white/10 hover:bg-red-500/80 rounded-full w-8 h-8 flex items-center justify-center transition"><i class="fas fa-times"></i></button>
             </div>
             <div class="p-6 space-y-5 overflow-y-auto flex-1 bg-white">
+                <input type="hidden" id="t-id">
                 <div class="grid grid-cols-2 gap-4">
                     <div><label class="block text-sm font-bold text-gray-700 mb-1.5">Tanggal</label><input type="date" id="t-tgl" class="w-full border border-gray-300 rounded-xl px-4 py-2.5 outline-none focus:ring-2 focus:ring-[#d4af37] bg-gray-50 font-medium"></div>
                     <div><label class="block text-sm font-bold text-gray-700 mb-1.5">Penguji</label><select id="t-penguji" class="w-full border border-gray-300 rounded-xl px-4 py-2.5 outline-none focus:ring-2 focus:ring-[#d4af37] bg-gray-50 font-medium"></select></div>
@@ -868,6 +884,12 @@
         let tempHafalanDetails = [];
         let html5QrcodeScanner = null;
         let chartInstance = null;
+
+        // Fungsi khusus agar mendapatkan tanggal lokal komputer secara akurat
+        function getLocalDate() {
+            const d = new Date();
+            return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+        }
 
         function checkAuthAndInit() {
             const isLoggedIn = sessionStorage.getItem('sipontren_logged_in') === 'true';
@@ -1137,6 +1159,22 @@
             document.body.appendChild(link); link.click(); document.body.removeChild(link); showToast("Laporan Hafalan Diekspor ke CSV!");
         }
 
+        function exportTahsinToCSV() {
+            const tahsins = getData(DB_KEY.TAHSIN);
+            if (tahsins.length === 0) return customAlert("Data evaluasi tahsin masih kosong.");
+            const santris = getData(DB_KEY.SANTRI); const asatidz = getData(DB_KEY.ASATIDZ);
+            let csvString = "Tanggal,Nama Santri,Penguji,Tajwid,Makharijul Huruf,Shifatul Huruf,Kelancaran,Rata-rata,Predikat,Rekomendasi,Catatan\n";
+            tahsins.sort((a,b) => new Date(b.tanggal) - new Date(a.tanggal)).forEach(t => {
+                const namaSantri = santris.find(s => s.id === t.santriId)?.nama || 'Unknown';
+                const namaPenguji = asatidz.find(a => a.id === t.penguji)?.nama || (t.penguji || '-');
+                const escapeCSV = (str) => `"${String(str || '').replace(/"/g, '""')}"`;
+                csvString += [ escapeCSV(t.tanggal), escapeCSV(namaSantri), escapeCSV(namaPenguji), escapeCSV(t.nilai?.tajwid||0), escapeCSV(t.nilai?.makhroj||0), escapeCSV(t.nilai?.shifat||0), escapeCSV(t.nilai?.kelancaran||0), escapeCSV(t.nilaiAkhir), escapeCSV(t.predikat), escapeCSV(t.rekomendasi), escapeCSV(t.catatan) ].join(",") + "\n";
+            });
+            const blob = new Blob(["\uFEFF" + csvString], { type: 'text/csv;charset=utf-8;' });
+            const link = document.createElement("a"); link.href = URL.createObjectURL(blob); link.download = `Laporan_Tahsin_${new Date().toISOString().split('T')[0]}.csv`;
+            document.body.appendChild(link); link.click(); document.body.removeChild(link); showToast("Laporan Tahsin Diekspor ke CSV!");
+        }
+
         function calculateAyatUnik(santriId) {
             const hafalanUser = getData(DB_KEY.HAFALAN).filter(h => h.santriId === santriId && h.jenis === 'quran' && h.predikat !== 'Rasib');
             let rekamanAyat = new Set(); let setJuz = new Set();
@@ -1319,22 +1357,39 @@
 
         function renderTahsinTable() {
             const table = document.getElementById('table-tahsin'); if(!table) return;
-            const data = getData(DB_KEY.TAHSIN);
+            const filterPred = document.getElementById('filter-predikat-tahsin')?.value;
+            let data = getData(DB_KEY.TAHSIN);
+            
+            if (filterPred) {
+                data = data.filter(d => d.predikat === filterPred);
+            }
+            
             const getSantriName = (id) => getData(DB_KEY.SANTRI).find(s => s.id === id)?.nama || 'Unknown';
             const getAsatidzName = (id) => getData(DB_KEY.ASATIDZ).find(s => s.id === id)?.nama || 'Unknown';
 
-            table.innerHTML = data.sort((a,b)=> new Date(b.tanggal)-new Date(a.tanggal)).map(d => `
+            table.innerHTML = data.sort((a,b)=> new Date(b.tanggal)-new Date(a.tanggal)).map(d => {
+                let colorClass = 'bg-blue-50 border-blue-200 text-blue-700'; // Default Jayyid
+                if(d.predikat === 'Mumtaz') colorClass = 'bg-green-50 border-green-200 text-green-700';
+                else if(d.predikat === 'Rasib') colorClass = 'bg-red-50 border-red-200 text-red-700';
+                else if(d.predikat === 'Maqbul') colorClass = 'bg-orange-50 border-orange-200 text-orange-700';
+                
+                return `
                 <tr class="hover:bg-gray-50 transition border-b border-gray-100">
                     <td class="p-5 text-xs font-bold text-gray-500 tracking-wide">${d.tanggal}</td>
                     <td class="p-5 font-bold text-gray-800">${getSantriName(d.santriId)}</td>
                     <td class="p-5 text-sm font-semibold text-gray-600">${getAsatidzName(d.penguji)}</td>
                     <td class="p-5 text-center font-black text-[#d4af37] text-xl drop-shadow-sm">${d.nilaiAkhir}</td>
-                    <td class="p-5 text-center"><span class="px-3 py-1 rounded-lg border text-xs font-bold shadow-sm ${d.predikat === 'Mumtaz' ? 'bg-green-50 border-green-200 text-green-700' : (d.predikat === 'Rasib' ? 'bg-red-50 border-red-200 text-red-700' : 'bg-blue-50 border-blue-200 text-blue-700')}">${d.predikat}</span></td>
                     <td class="p-5 text-center">
+                        <span class="px-3 py-1 rounded-lg border text-xs font-bold shadow-sm inline-block mb-1.5 ${colorClass}">${d.predikat}</span>
+                        <span class="block text-[10px] text-gray-500 font-bold uppercase tracking-wider leading-tight">${d.rekomendasi || '-'}</span>
+                    </td>
+                    <td class="p-5 text-center flex justify-center gap-2">
+                        <button onclick="editTahsin('${d.id}')" class="text-teal-600 hover:text-white bg-teal-50 hover:bg-teal-500 w-8 h-8 rounded-lg shadow-sm transition"><i class="fas fa-edit"></i></button>
                         <button onclick="deleteDataPasti('${DB_KEY.TAHSIN}', '${d.id}')" class="text-red-500 hover:text-white bg-red-50 hover:bg-red-500 w-8 h-8 rounded-lg shadow-sm transition"><i class="fas fa-trash"></i></button>
                     </td>
                 </tr>
-            `).join('') || `<tr><td colspan="6" class="text-center p-8 text-gray-400 font-medium">Belum ada log evaluasi tahsin.</td></tr>`;
+                `;
+            }).join('') || `<tr><td colspan="6" class="text-center p-8 text-gray-400 font-medium">Belum ada data evaluasi tahsin sesuai kategori.</td></tr>`;
         }
 
         function openLeaderboard() {
@@ -1414,7 +1469,7 @@
             document.getElementById('dash-tot-santri').innerText = santris.length;
             document.getElementById('dash-tot-asatidz').innerText = getData(DB_KEY.ASATIDZ).length;
             
-            const hariIni = new Date().toISOString().split('T')[0];
+            const hariIni = getLocalDate();
             const hafalans = getData(DB_KEY.HAFALAN);
             document.getElementById('dash-tot-setoran').innerText = hafalans.filter(h => h.tanggal === hariIni).length;
             
@@ -1602,7 +1657,7 @@
             
             const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
             const tglIndo = new Date(tanggal).toLocaleDateString('id-ID', options);
-            let pesan = `Assalamu'alaikum Bapak/Ibu,\n\nKami mengabarkan bahwa Ananda *${santri.nama}* pada hari ini:\n\n📅 Tgl: ${tglIndo}\n📚 Sesi: ${namaSesi}\n📋 Status: *${status.toUpperCase()}*\n\nTerima kasih. 🙏`;
+            let pesan = `Assalamu'alaikum Bapak/Ibu,\n\nKami menginformasikan bahwa Ananda *${santri.nama}* pada hari ini:\n\n📅 Tgl: ${tglIndo}\n📚 Sesi: ${namaSesi}\n📋 Status: *${status.toUpperCase()}*\n\nاللّهم اجعل اولادنا من الصّالحين. 🙏`;
             let noWA = santri.wa.startsWith('0') ? '62' + santri.wa.substring(1) : santri.wa;
             window.open(`https://wa.me/${noWA}?text=${encodeURIComponent(pesan)}`, '_blank');
         }
@@ -1632,7 +1687,7 @@
         }
 
         function openModalHafalanBaru() {
-            document.getElementById('h-id').value = ''; document.getElementById('h-tgl').value = new Date().toISOString().split('T')[0];
+            document.getElementById('h-id').value = ''; document.getElementById('h-tgl').value = getLocalDate();
             document.getElementById('h-kategori').value = 'Ziyadah'; document.getElementById('h-santri').value = '';
             document.getElementById('h-jenis').value = 'quran'; document.getElementById('h-penyimak').value = ''; document.getElementById('h-predikat').value = 'Mumtaz';
             tempHafalanDetails = []; renderHafalanDetailList(); document.getElementById('h-teks-bebas').value = ''; toggleInputHafalan(); openModal('modal-hafalan');
@@ -1663,9 +1718,27 @@
         }
 
         function openModalTahsin() {
-            document.getElementById('t-tgl').value = new Date().toISOString().split('T')[0];
+            document.getElementById('t-id').value = '';
+            document.getElementById('t-tgl').value = getLocalDate();
             ['t-penguji','t-santri','t-tajwid','t-makhroj','t-shifat','t-kelancaran','t-catatan'].forEach(id => document.getElementById(id).value = '');
             document.getElementById('t-rekomendasi').value = 'Lulus & Lanjut Menghafal'; calculateTahsinLive(); openModal('modal-tahsin');
+        }
+
+        function editTahsin(id) {
+            const data = getData(DB_KEY.TAHSIN).find(x => x.id === id);
+            if (!data) return customAlert("Data tidak ditemukan!");
+            document.getElementById('t-id').value = data.id;
+            document.getElementById('t-tgl').value = data.tanggal;
+            document.getElementById('t-santri').value = data.santriId;
+            document.getElementById('t-penguji').value = data.penguji;
+            document.getElementById('t-tajwid').value = data.nilai.tajwid !== undefined ? data.nilai.tajwid : '';
+            document.getElementById('t-makhroj').value = data.nilai.makhroj !== undefined ? data.nilai.makhroj : '';
+            document.getElementById('t-shifat').value = data.nilai.shifat !== undefined ? data.nilai.shifat : '';
+            document.getElementById('t-kelancaran').value = data.nilai.kelancaran !== undefined ? data.nilai.kelancaran : '';
+            document.getElementById('t-rekomendasi').value = data.rekomendasi || 'Lulus & Lanjut Menghafal';
+            document.getElementById('t-catatan').value = data.catatan || '';
+            calculateTahsinLive();
+            openModal('modal-tahsin');
         }
 
         function calculateTahsinLive() {
@@ -1692,8 +1765,14 @@
             const avg = ((taj + mak + shi + kel) / 4).toFixed(1);
             let pred = 'Rasib'; if(avg >= 90) pred = 'Mumtaz'; else if(avg >= 80) pred = 'Jayyid Jiddan'; else if(avg >= 70) pred = 'Jayyid'; else if(avg >= 60) pred = 'Maqbul';
             
-            const data = { id: generateId('THS'), tanggal: document.getElementById('t-tgl').value, santriId, penguji: document.getElementById('t-penguji').value, nilai: { tajwid: taj, makhroj: mak, shifat: shi, kelancaran: kel }, nilaiAkhir: avg, predikat: pred, rekomendasi: document.getElementById('t-rekomendasi').value, catatan: document.getElementById('t-catatan').value };
-            let arr = getData(DB_KEY.TAHSIN); arr.push(data); saveData(DB_KEY.TAHSIN, arr);
+            const id = document.getElementById('t-id').value || generateId('THS');
+            const data = { id: id, tanggal: document.getElementById('t-tgl').value, santriId, penguji: document.getElementById('t-penguji').value, nilai: { tajwid: taj, makhroj: mak, shifat: shi, kelancaran: kel }, nilaiAkhir: avg, predikat: pred, rekomendasi: document.getElementById('t-rekomendasi').value, catatan: document.getElementById('t-catatan').value };
+            
+            let arr = getData(DB_KEY.TAHSIN);
+            const idx = arr.findIndex(x => x.id === id);
+            if(idx > -1) arr[idx] = data; else arr.push(data);
+            
+            saveData(DB_KEY.TAHSIN, arr);
             closeModal('modal-tahsin'); refreshAllViews(); showToast('Nilai Tahsin Tersimpan!');
         }
 
@@ -1765,7 +1844,7 @@
 
         function initApp() {
             initSupabase(); refreshAllViews();
-            const today = new Date().toISOString().split('T')[0];
+            const today = getLocalDate();
             ['h-tgl', 't-tgl', 'absen-tanggal'].forEach(id => { if(document.getElementById(id)) document.getElementById(id).value = today; });
         }
 
