@@ -94,10 +94,18 @@
                 <img src="logo-pesantren-192.png" id="login-logo" class="w-full h-full object-contain relative z-10">
             </div>
             <h2 class="text-3xl font-black gold-gradient-text mb-1 tracking-tight" id="login-title">SIPONTREN</h2>
-            <p class="text-gray-500 text-sm mb-8 font-medium">Sistem Informasi Pondok Pesantren</p>
+            <p class="text-gray-500 text-sm mb-6 font-medium">Sistem Informasi Pondok Pesantren</p>
             
+            <div class="text-left w-full mb-4">
+                <label class="block text-sm font-bold text-gray-700 mb-2">Username</label>
+                <div class="relative group">
+                    <i class="fas fa-user absolute left-4 top-3.5 text-gray-400 group-focus-within:text-[#d4af37] transition-colors"></i>
+                    <input type="text" id="login-username" onkeypress="if(event.key === 'Enter') document.getElementById('login-password').focus()" placeholder="Masukkan username..." class="w-full bg-gray-50 border border-gray-200 rounded-xl py-3 pl-11 pr-4 focus:ring-2 focus:ring-[#d4af37] focus:border-[#d4af37] outline-none transition font-medium">
+                </div>
+            </div>
+
             <div class="text-left w-full mb-6">
-                <label class="block text-sm font-bold text-gray-700 mb-2">Kata Sandi (Password Akses)</label>
+                <label class="block text-sm font-bold text-gray-700 mb-2">Kata Sandi</label>
                 <div class="relative group">
                     <i class="fas fa-lock absolute left-4 top-3.5 text-gray-400 group-focus-within:text-[#d4af37] transition-colors"></i>
                     <input type="password" id="login-password" onkeypress="if(event.key === 'Enter') doLogin()" placeholder="Masukkan sandi..." class="w-full bg-gray-50 border border-gray-200 rounded-xl py-3 pl-11 pr-4 focus:ring-2 focus:ring-[#d4af37] focus:border-[#d4af37] outline-none transition font-medium">
@@ -134,7 +142,7 @@
                 <button onclick="switchTab('santri')" class="menu-item w-full flex items-center gap-3 px-4 py-3 text-gray-300 rounded-xl text-left">
                     <i class="fas fa-users w-5 text-center"></i><span class="font-medium">Data Santri</span>
                 </button>
-                <button onclick="switchTab('asatidz')" class="menu-item w-full flex items-center gap-3 px-4 py-3 text-gray-300 rounded-xl text-left">
+                <button onclick="switchTab('asatidz')" class="menu-item admin-only w-full flex items-center gap-3 px-4 py-3 text-gray-300 rounded-xl text-left">
                     <i class="fas fa-chalkboard-teacher w-5 text-center"></i><span class="font-medium">Data Asatidz</span>
                 </button>
                 <button onclick="switchTab('jadwal')" class="menu-item w-full flex items-center gap-3 px-4 py-3 text-gray-300 rounded-xl text-left">
@@ -156,7 +164,7 @@
             </nav>
             
             <div class="p-4 border-t border-[#d4af37]/20 space-y-2 bg-black/10">
-                <button onclick="switchTab('pengaturan')" class="w-full flex items-center justify-center gap-2 px-4 py-2.5 hover:bg-white/10 text-gray-300 rounded-xl text-sm font-semibold transition border border-transparent hover:border-[#d4af37]/30">
+                <button onclick="switchTab('pengaturan')" class="admin-only w-full flex items-center justify-center gap-2 px-4 py-2.5 hover:bg-white/10 text-gray-300 rounded-xl text-sm font-semibold transition border border-transparent hover:border-[#d4af37]/30">
                     <i class="fas fa-cog"></i> Pengaturan
                 </button>
                 <button onclick="doLogout()" class="w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-red-900/40 hover:bg-red-800 text-red-200 rounded-xl text-sm font-semibold transition">
@@ -277,7 +285,7 @@
                             <i class="fas fa-search absolute left-4 top-3.5 text-[#d4af37] group-focus-within:text-[#0b4d46] transition-colors"></i>
                             <input type="text" id="search-asatidz" onkeyup="renderAsatidzTable()" placeholder="Cari Nama Asatidz..." class="pl-11 pr-4 py-2.5 w-full border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#d4af37] focus:border-[#d4af37] outline-none text-sm bg-white/80 font-medium">
                         </div>
-                        <button onclick="openModal('modal-asatidz')" class="w-full sm:w-auto bg-[#0b4d46] hover:bg-[#083b35] text-white px-6 py-2.5 rounded-xl font-bold text-sm transition shadow-md border border-[#d4af37]/30">
+                        <button onclick="openModalAsatidz()" class="w-full sm:w-auto bg-[#0b4d46] hover:bg-[#083b35] text-white px-6 py-2.5 rounded-xl font-bold text-sm transition shadow-md border border-[#d4af37]/30">
                             <i class="fas fa-plus text-[#d4af37] mr-2"></i> Tambah Asatidz
                         </button>
                     </div>
@@ -576,7 +584,7 @@
                             </div>
 
                             <div>
-                                <label class="block text-sm font-bold text-[#0b4d46] mb-1.5">Kata Sandi Aplikasi (Login Ustadz)</label>
+                                <label class="block text-sm font-bold text-[#0b4d46] mb-1.5">Kata Sandi (Untuk Username: admin)</label>
                                 <input type="text" id="setting-password" class="w-full border border-[#d4af37] bg-yellow-50/30 rounded-xl px-4 py-3 outline-none focus:ring-2 focus:ring-[#d4af37] font-bold text-[#0b4d46]" placeholder="Default: admin123">
                             </div>
                             
@@ -822,7 +830,7 @@
     <!-- Modal Tabel Leaderboard / Asatidz / Jadwal / Import -->
     <div id="modal-import-santri" class="modal fixed inset-0 bg-black/60 z-50 items-center justify-center p-4 backdrop-blur-sm"><div class="bg-white rounded-3xl w-full max-w-md shadow-2xl overflow-hidden modal-content-anim"><div class="px-6 py-5 border-b border-[#d4af37]/20 bg-gradient-to-r from-[#0b4d46] to-teal-800 flex justify-between items-center"><h3 class="font-bold text-lg text-white">Import Santri (CSV)</h3><button onclick="closeModal('modal-import-santri')" class="text-white/70 hover:text-white"><i class="fas fa-times"></i></button></div><div class="p-6"><button onclick="downloadTemplateCSV()" class="w-full bg-gray-100 hover:bg-gray-200 text-gray-700 py-3 rounded-xl border border-gray-300 mb-5 text-sm font-bold transition"><i class="fas fa-download text-[#d4af37] mr-2"></i> Unduh Template</button><input type="file" id="file-csv-santri" accept=".csv" class="w-full mb-5 border border-gray-300 p-3 rounded-xl text-sm font-medium bg-gray-50"><button onclick="processImportSantri()" class="w-full bg-[#0b4d46] text-white font-bold py-3.5 rounded-xl shadow-md border border-[#d4af37]/30">Mulai Import</button></div></div></div>
     
-    <div id="modal-asatidz" class="modal fixed inset-0 bg-black/60 z-50 items-center justify-center p-4 backdrop-blur-sm"><div class="bg-white rounded-3xl w-full max-w-sm shadow-2xl overflow-hidden modal-content-anim"><div class="px-6 py-5 border-b border-[#d4af37]/20 bg-gradient-to-r from-[#0b4d46] to-teal-800 flex justify-between items-center"><h3 class="font-bold text-lg text-white">Form Asatidz</h3><button onclick="closeModal('modal-asatidz')" class="text-white/70 hover:text-white"><i class="fas fa-times"></i></button></div><div class="p-6 space-y-4"><input type="hidden" id="a-id"><div><label class="block text-sm font-bold text-gray-700 mb-1">Nama Lengkap</label><input type="text" id="a-nama" class="w-full border border-gray-300 rounded-xl px-4 py-2.5 outline-none focus:ring-2 focus:ring-[#d4af37]"></div><div class="grid grid-cols-2 gap-4"><div><label class="block text-sm font-bold text-gray-700 mb-1">Gender</label><select id="a-gender" class="w-full border border-gray-300 rounded-xl px-4 py-2.5 outline-none focus:ring-2 focus:ring-[#d4af37] text-[#0b4d46]"><option value="L">L</option><option value="P">P</option></select></div><div><label class="block text-sm font-bold text-gray-700 mb-1">Jabatan</label><input type="text" id="a-jabatan" class="w-full border border-gray-300 rounded-xl px-4 py-2.5 outline-none focus:ring-2 focus:ring-[#d4af37]"></div></div><div><label class="block text-sm font-bold text-gray-700 mb-1">No. WhatsApp</label><input type="text" id="a-wa" class="w-full border border-gray-300 rounded-xl px-4 py-2.5 outline-none focus:ring-2 focus:ring-[#d4af37]"></div><button onclick="saveAsatidz()" class="w-full bg-[#0b4d46] text-white font-bold py-3.5 rounded-xl mt-2 shadow-md border border-[#d4af37]/30">Simpan</button></div></div></div>
+    <div id="modal-asatidz" class="modal fixed inset-0 bg-black/60 z-50 items-center justify-center p-4 backdrop-blur-sm"><div class="bg-white rounded-3xl w-full max-w-sm shadow-2xl overflow-hidden modal-content-anim"><div class="px-6 py-5 border-b border-[#d4af37]/20 bg-gradient-to-r from-[#0b4d46] to-teal-800 flex justify-between items-center"><h3 class="font-bold text-lg text-white" id="modal-asatidz-title">Form Asatidz</h3><button onclick="closeModal('modal-asatidz')" class="text-white/70 hover:text-white"><i class="fas fa-times"></i></button></div><div class="p-6 space-y-4"><input type="hidden" id="a-id"><div><label class="block text-sm font-bold text-gray-700 mb-1">Nama Lengkap</label><input type="text" id="a-nama" class="w-full border border-gray-300 rounded-xl px-4 py-2.5 outline-none focus:ring-2 focus:ring-[#d4af37]"></div><div class="grid grid-cols-2 gap-4"><div><label class="block text-sm font-bold text-gray-700 mb-1">Gender</label><select id="a-gender" class="w-full border border-gray-300 rounded-xl px-4 py-2.5 outline-none focus:ring-2 focus:ring-[#d4af37] text-[#0b4d46]"><option value="L">L</option><option value="P">P</option></select></div><div><label class="block text-sm font-bold text-gray-700 mb-1">Jabatan</label><input type="text" id="a-jabatan" class="w-full border border-gray-300 rounded-xl px-4 py-2.5 outline-none focus:ring-2 focus:ring-[#d4af37]"></div></div><div><label class="block text-sm font-bold text-gray-700 mb-1">No. WhatsApp</label><input type="text" id="a-wa" class="w-full border border-gray-300 rounded-xl px-4 py-2.5 outline-none focus:ring-2 focus:ring-[#d4af37]"></div><div class="grid grid-cols-2 gap-4 mt-2 pt-4 border-t border-gray-100"><div><label class="block text-[11px] font-bold text-gray-700 mb-1 uppercase">Username Login</label><input type="text" id="a-username" class="w-full border border-gray-300 rounded-xl px-3 py-2.5 outline-none focus:ring-2 focus:ring-[#d4af37] text-sm"></div><div><label class="block text-[11px] font-bold text-gray-700 mb-1 uppercase">Kata Sandi</label><input type="text" id="a-password" class="w-full border border-gray-300 rounded-xl px-3 py-2.5 outline-none focus:ring-2 focus:ring-[#d4af37] text-sm"></div></div><button onclick="saveAsatidz()" class="w-full bg-[#0b4d46] text-white font-bold py-3.5 rounded-xl mt-2 shadow-md border border-[#d4af37]/30">Simpan Akun Asatidz</button></div></div></div>
     
     <div id="modal-jadwal" class="modal fixed inset-0 bg-black/60 z-50 items-center justify-center p-4 backdrop-blur-sm"><div class="bg-white rounded-3xl w-full max-w-sm shadow-2xl overflow-hidden modal-content-anim"><div class="px-6 py-5 border-b border-[#d4af37]/20 bg-gradient-to-r from-[#0b4d46] to-teal-800 flex justify-between items-center"><h3 class="font-bold text-lg text-white" id="modal-jadwal-title">Tambah Sesi</h3><button onclick="closeModal('modal-jadwal')" class="text-white/70 hover:text-white"><i class="fas fa-times"></i></button></div><div class="p-6 space-y-4"><input type="hidden" id="j-id"><div><label class="block text-sm font-bold text-gray-700 mb-1">Nama Sesi</label><input type="text" id="j-nama" class="w-full border border-gray-300 rounded-xl px-4 py-2.5 outline-none focus:ring-2 focus:ring-[#d4af37]"></div><div class="grid grid-cols-2 gap-4"><div><label class="block text-sm font-bold text-gray-700 mb-1">Hari</label><select id="j-hari" class="w-full border border-gray-300 rounded-xl px-4 py-2.5 outline-none focus:ring-2 focus:ring-[#d4af37] text-[#0b4d46]"><option value="Senin">Senin</option><option value="Selasa">Selasa</option><option value="Rabu">Rabu</option><option value="Kamis">Kamis</option><option value="Jumat">Jumat</option><option value="Sabtu">Sabtu</option><option value="Ahad">Ahad</option></select></div><div><label class="block text-sm font-bold text-gray-700 mb-1">Waktu</label><input type="time" id="j-waktu" class="w-full border border-gray-300 rounded-xl px-4 py-2.5 outline-none focus:ring-2 focus:ring-[#d4af37]"></div></div><button onclick="saveJadwal()" class="w-full bg-[#0b4d46] text-white font-bold py-3.5 rounded-xl mt-2 shadow-md border border-[#d4af37]/30">Simpan</button></div></div></div>
 
@@ -892,13 +900,15 @@
         }
 
         function checkAuthAndInit() {
-            const isLoggedIn = sessionStorage.getItem('sipontren_logged_in') === 'true';
+            const sessionData = sessionStorage.getItem('sipontren_logged_in');
             const loginScreen = document.getElementById('login-screen');
             const appContainer = document.getElementById('app-container');
             
-            if (isLoggedIn) {
+            if (sessionData) {
+                const user = JSON.parse(sessionData);
                 loginScreen.classList.add('hidden');
                 appContainer.classList.remove('hidden');
+                applyRolePermissions(user);
                 initApp();
             } else {
                 loginScreen.classList.remove('hidden');
@@ -906,25 +916,53 @@
                 let config = getData(DB_KEY.SETTING);
                 if (!config || !config.nama) {
                     config = { nama: DEFAULT_NAMA, logo: DEFAULT_LOGO, password: 'admin123' };
-                    saveData(DB_KEY.SETTING, config);
+                    // Hapus fungsi saveData di sini agar tidak menimpa pengaturan di Cloud dengan pengaturan default sebelum tersinkronisasi
                 }
                 document.getElementById('login-title').innerText = config.nama;
                 document.getElementById('login-logo').src = config.logo || DEFAULT_LOGO;
             }
         }
 
+        function applyRolePermissions(user) {
+            const adminOnlyElements = document.querySelectorAll('.admin-only');
+            if (user.role === 'admin') {
+                adminOnlyElements.forEach(el => el.classList.remove('hidden'));
+            } else {
+                adminOnlyElements.forEach(el => el.classList.add('hidden'));
+                // Jika Asatidz login, pastikan tab yang terbuka bukan pengaturan/asatidz
+                const activeTab = document.querySelector('.tab-content.active');
+                if(activeTab && (activeTab.id === 'tab-asatidz' || activeTab.id === 'tab-pengaturan')) {
+                    switchTab('dashboard');
+                }
+            }
+        }
+
         function doLogin() {
+            const user = document.getElementById('login-username').value.trim();
             const pass = document.getElementById('login-password').value;
             let config = getData(DB_KEY.SETTING);
-            const validPass = (config && config.password) ? config.password : 'admin123';
+            const validAdminPass = (config && config.password) ? config.password : 'admin123';
             
-            if (pass === validPass) {
-                sessionStorage.setItem('sipontren_logged_in', 'true');
+            if (user === 'admin' && pass === validAdminPass) {
+                sessionStorage.setItem('sipontren_logged_in', JSON.stringify({ role: 'admin', id: 'admin', name: 'Administrator' }));
+                document.getElementById('login-username').value = '';
                 document.getElementById('login-password').value = '';
-                showToast("Berhasil masuk. Selamat datang!");
+                showToast("Berhasil masuk sebagai Admin!");
+                checkAuthAndInit();
+                return;
+            }
+
+            const asatidz = getData(DB_KEY.ASATIDZ);
+            const ustadz = asatidz.find(a => a.username === user && a.password === pass);
+
+            if (ustadz) {
+                sessionStorage.setItem('sipontren_logged_in', JSON.stringify({ role: 'asatidz', id: ustadz.id, name: ustadz.nama }));
+                document.getElementById('login-username').value = '';
+                document.getElementById('login-password').value = '';
+                showToast(`Ahlan wa Sahlan, Ustadz/ah ${ustadz.nama}!`);
                 checkAuthAndInit();
             } else {
-                showToast("Password yang Anda masukkan salah!", true);
+                showToast("Username atau Password salah!", true);
             }
         }
 
@@ -968,6 +1006,15 @@
                 if(data) {
                     data.forEach(row => localStorage.setItem(row.key, JSON.stringify(row.value)));
                     refreshAllViews();
+                    
+                    // Tambahan: Perbarui nama dan logo di layar login jika sinkronisasi Cloud baru saja selesai
+                    if(!sessionStorage.getItem('sipontren_logged_in')) {
+                        let config = getData(DB_KEY.SETTING);
+                        if(config && config.nama) {
+                            document.getElementById('login-title').innerText = config.nama;
+                            document.getElementById('login-logo').src = config.logo || DEFAULT_LOGO;
+                        }
+                    }
                 }
             } catch(e) {}
         }
@@ -1228,11 +1275,12 @@
             const data = getData(DB_KEY.ASATIDZ).filter(d => d.nama.toLowerCase().includes(search));
             table.innerHTML = data.map(d => `
                 <tr class="hover:bg-gray-50 transition">
-                    <td class="p-5 font-bold text-gray-800">${d.nama}</td>
+                    <td class="p-5 font-bold text-gray-800">${d.nama} <br><span class="text-[10px] text-gray-400 font-mono font-bold">Username: ${d.username || '-'}</span></td>
                     <td class="p-5 text-center font-bold text-gray-600">${d.gender}</td>
                     <td class="p-5 text-gray-700 font-medium">${d.jabatan || '-'}</td>
                     <td class="p-5 font-mono text-sm text-gray-500 font-bold">${d.wa || '-'}</td>
-                    <td class="p-5 text-center">
+                    <td class="p-5 text-center flex justify-center gap-2">
+                        <button onclick="editAsatidz('${d.id}')" class="w-8 h-8 rounded-lg bg-teal-50 text-teal-600 hover:bg-teal-500 hover:text-white transition shadow-sm"><i class="fas fa-edit"></i></button>
                         <button onclick="deleteDataPasti('${DB_KEY.ASATIDZ}', '${d.id}')" class="w-8 h-8 rounded-lg bg-red-50 text-red-500 hover:bg-red-500 hover:text-white transition shadow-sm"><i class="fas fa-trash"></i></button>
                     </td>
                 </tr>
@@ -1518,10 +1566,40 @@
             saveData(DB_KEY.SANTRI, arr); closeModal('modal-santri'); refreshAllViews(); showToast("Data Santri Tersimpan!");
         }
 
+        function openModalAsatidz(id = null) {
+            document.getElementById('modal-asatidz-title').innerText = id ? 'Edit Data Asatidz' : 'Tambah Asatidz Baru';
+            if (id) {
+                const data = getData(DB_KEY.ASATIDZ).find(x => x.id === id);
+                if (data) {
+                    document.getElementById('a-id').value = data.id; document.getElementById('a-nama').value = data.nama;
+                    document.getElementById('a-gender').value = data.gender; document.getElementById('a-jabatan').value = data.jabatan || '';
+                    document.getElementById('a-wa').value = data.wa || ''; document.getElementById('a-username').value = data.username || '';
+                    document.getElementById('a-password').value = data.password || '';
+                }
+            } else {
+                document.getElementById('a-id').value = ''; document.getElementById('a-nama').value = '';
+                document.getElementById('a-gender').value = 'L'; document.getElementById('a-jabatan').value = '';
+                document.getElementById('a-wa').value = ''; document.getElementById('a-username').value = ''; document.getElementById('a-password').value = '';
+            }
+            openModal('modal-asatidz');
+        }
+
+        function editAsatidz(id) { openModalAsatidz(id); }
+
         function saveAsatidz() {
             const id = document.getElementById('a-id').value || generateId('AST');
-            const data = { id, nama: document.getElementById('a-nama').value, gender: document.getElementById('a-gender').value, jabatan: document.getElementById('a-jabatan').value, wa: document.getElementById('a-wa').value };
+            const data = { 
+                id, 
+                nama: document.getElementById('a-nama').value, 
+                gender: document.getElementById('a-gender').value, 
+                jabatan: document.getElementById('a-jabatan').value, 
+                wa: document.getElementById('a-wa').value,
+                username: document.getElementById('a-username').value.trim(),
+                password: document.getElementById('a-password').value
+            };
             if(!data.nama) return customAlert("Nama Asatidz wajib diisi!");
+            if(data.username && data.username.toLowerCase() === 'admin') return customAlert("Username 'admin' tidak boleh digunakan!");
+
             let arr = getData(DB_KEY.ASATIDZ); const idx = arr.findIndex(x => x.id === id);
             if(idx > -1) arr[idx] = data; else arr.push(data);
             saveData(DB_KEY.ASATIDZ, arr); closeModal('modal-asatidz'); refreshAllViews(); showToast("Data Asatidz Tersimpan!");
@@ -1689,7 +1767,18 @@
         function openModalHafalanBaru() {
             document.getElementById('h-id').value = ''; document.getElementById('h-tgl').value = getLocalDate();
             document.getElementById('h-kategori').value = 'Ziyadah'; document.getElementById('h-santri').value = '';
-            document.getElementById('h-jenis').value = 'quran'; document.getElementById('h-penyimak').value = ''; document.getElementById('h-predikat').value = 'Mumtaz';
+            document.getElementById('h-jenis').value = 'quran'; document.getElementById('h-predikat').value = 'Mumtaz';
+            
+            const sessionData = sessionStorage.getItem('sipontren_logged_in');
+            const user = sessionData ? JSON.parse(sessionData) : null;
+            if (user && user.role === 'asatidz') {
+                document.getElementById('h-penyimak').value = user.id;
+                document.getElementById('h-penyimak').disabled = true;
+            } else {
+                document.getElementById('h-penyimak').value = '';
+                document.getElementById('h-penyimak').disabled = false;
+            }
+
             tempHafalanDetails = []; renderHafalanDetailList(); document.getElementById('h-teks-bebas').value = ''; toggleInputHafalan(); openModal('modal-hafalan');
         }
 
@@ -1697,7 +1786,18 @@
             const data = getData(DB_KEY.HAFALAN).find(x => x.id === id); if (!data) return customAlert("Data tidak ditemukan!");
             document.getElementById('h-id').value = data.id; document.getElementById('h-tgl').value = data.tanggal; document.getElementById('h-kategori').value = data.kategori;
             document.getElementById('h-santri').value = data.santriId; document.getElementById('h-jenis').value = data.jenis || 'quran';
-            document.getElementById('h-penyimak').value = data.penyimak; document.getElementById('h-predikat').value = data.predikat;
+            document.getElementById('h-predikat').value = data.predikat;
+            
+            const sessionData = sessionStorage.getItem('sipontren_logged_in');
+            const user = sessionData ? JSON.parse(sessionData) : null;
+            if (user && user.role === 'asatidz') {
+                document.getElementById('h-penyimak').value = user.id;
+                document.getElementById('h-penyimak').disabled = true;
+            } else {
+                document.getElementById('h-penyimak').value = data.penyimak;
+                document.getElementById('h-penyimak').disabled = false;
+            }
+
             toggleInputHafalan();
             if (data.jenis === 'quran') { tempHafalanDetails = [...(data.detail || [])]; renderHafalanDetailList(); } 
             else { document.getElementById('h-teks-bebas').value = data.detail[0]?.teks || ''; }
@@ -1720,7 +1820,18 @@
         function openModalTahsin() {
             document.getElementById('t-id').value = '';
             document.getElementById('t-tgl').value = getLocalDate();
-            ['t-penguji','t-santri','t-tajwid','t-makhroj','t-shifat','t-kelancaran','t-catatan'].forEach(id => document.getElementById(id).value = '');
+            ['t-santri','t-tajwid','t-makhroj','t-shifat','t-kelancaran','t-catatan'].forEach(id => document.getElementById(id).value = '');
+            
+            const sessionData = sessionStorage.getItem('sipontren_logged_in');
+            const user = sessionData ? JSON.parse(sessionData) : null;
+            if (user && user.role === 'asatidz') {
+                document.getElementById('t-penguji').value = user.id;
+                document.getElementById('t-penguji').disabled = true;
+            } else {
+                document.getElementById('t-penguji').value = '';
+                document.getElementById('t-penguji').disabled = false;
+            }
+
             document.getElementById('t-rekomendasi').value = 'Lulus & Lanjut Menghafal'; calculateTahsinLive(); openModal('modal-tahsin');
         }
 
@@ -1730,7 +1841,17 @@
             document.getElementById('t-id').value = data.id;
             document.getElementById('t-tgl').value = data.tanggal;
             document.getElementById('t-santri').value = data.santriId;
-            document.getElementById('t-penguji').value = data.penguji;
+            
+            const sessionData = sessionStorage.getItem('sipontren_logged_in');
+            const user = sessionData ? JSON.parse(sessionData) : null;
+            if (user && user.role === 'asatidz') {
+                document.getElementById('t-penguji').value = user.id;
+                document.getElementById('t-penguji').disabled = true;
+            } else {
+                document.getElementById('t-penguji').value = data.penguji;
+                document.getElementById('t-penguji').disabled = false;
+            }
+
             document.getElementById('t-tajwid').value = data.nilai.tajwid !== undefined ? data.nilai.tajwid : '';
             document.getElementById('t-makhroj').value = data.nilai.makhroj !== undefined ? data.nilai.makhroj : '';
             document.getElementById('t-shifat').value = data.nilai.shifat !== undefined ? data.nilai.shifat : '';
@@ -1843,12 +1964,15 @@
         }
 
         function initApp() {
-            initSupabase(); refreshAllViews();
+            refreshAllViews();
             const today = getLocalDate();
             ['h-tgl', 't-tgl', 'absen-tanggal'].forEach(id => { if(document.getElementById(id)) document.getElementById(id).value = today; });
         }
 
-        window.onload = () => { checkAuthAndInit(); };
+        window.onload = () => { 
+            initSupabase(); // Pindahkan sinkronisasi Cloud ke sini, agar berjalan langsung saat web dibuka
+            checkAuthAndInit(); 
+        };
     </script>
 </body>
 </html>
